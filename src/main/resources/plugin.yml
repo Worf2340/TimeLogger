@@ -1,0 +1,11 @@
+name: TimeLogger
+version: ${project.version}
+main: com.mctng.timelogger.TimeLogger
+api-version: 1.13
+depend: []
+authors: [Worf2340]
+website: www.mctng.com
+
+commands:
+  playtime:
+    usage: /playtime [player]
