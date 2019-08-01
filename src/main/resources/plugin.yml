@@ -8,4 +8,4 @@ website: www.mctng.com
 
 commands:
   playtime:
-    usage: /playtime [player]
+    usage: /playtime [player] [time]

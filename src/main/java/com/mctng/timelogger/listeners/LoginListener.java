@@ -1,10 +1,11 @@
 package com.mctng.timelogger.listeners;
 
 import com.mctng.timelogger.TimeLogger;
-import org.bukkit.Statistic;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+
+import java.time.Instant;
 
 public class LoginListener implements Listener {
 
@@ -16,8 +17,6 @@ public class LoginListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
-        if (!plugin.SQLHandler.doesPlayerExist(event.getPlayer())){
-            plugin.SQLHandler.insertPlayer(event.getPlayer(), event.getPlayer().getStatistic(Statistic.PLAY_ONE_MINUTE));
-        }
+        plugin.startingTimes.put(event.getPlayer(), Instant.now());
     }
 }
