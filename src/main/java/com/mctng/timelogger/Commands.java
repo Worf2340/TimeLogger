@@ -34,21 +34,28 @@ public class Commands implements CommandExecutor {
                     String uuid;
                     String playerName;
                     ChatColor chatColor;
+                    long currentPlaytime;
 
                     if (plugin.getServer().getPlayerExact(args[0]) != null){
                         Player player = plugin.getServer().getPlayerExact(args[0]);
                         uuid = player.getUniqueId().toString();
                         playerName = player.getName();
                         chatColor = ChatColor.GREEN;
+
+                        Instant playerJoinTime = plugin.startingTimes.get(player);
+
+                        currentPlaytime = Duration.between(playerJoinTime, Instant.now()).toMillis();
+
                     }
                     else {
                         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[0]);
                         uuid = offlinePlayer.getUniqueId().toString();
                         playerName = offlinePlayer.getName();
                         chatColor = ChatColor.RED;
+                        currentPlaytime = 0;
                     }
 
-                    long durationMillis = plugin.SQLHandler.getPlaytime(uuid, null, null);
+                    long durationMillis = plugin.SQLHandler.getPlaytime(uuid, null, null) + currentPlaytime;
 
                     if (durationMillis == 0){
                         sender.sendMessage(chatColor + playerName + ChatColor.GRAY +
@@ -149,7 +156,7 @@ public class Commands implements CommandExecutor {
                                 formatMillis(multiple*time) + ".");
                     }
                     else {
-                        sender.sendMessage(chatColor + playerName + ChatColor.GRAY +
+                        sender.sendMessage(chatColor + playerName    + ChatColor.GRAY +
                                 " has played for " + formatMillis(durationMillis) + " in the last " +
                                 formatMillis(multiple*time) + ".");
                     }

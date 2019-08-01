@@ -8,4 +8,5 @@ website: www.mctng.com
 
 commands:
   playtime:
-    usage: /playtime [player] [time]
+    usage: /playtime [player] <time>
+    permission: timelogger.playtime
