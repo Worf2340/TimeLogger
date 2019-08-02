@@ -72,6 +72,7 @@ public class SQLite {
         }
     }
 
+
     public long getPlaytime(String uuid, String time1, String time2) {
 
         String sql;
@@ -119,7 +120,55 @@ public class SQLite {
         return 0;
     }
 
-    public long getLeftoverPlaytime(String uuid, String time1, String time2) {
+    public Long getPlaytimeInDay (String uuid, String beginningOfDayString, String endOfDayString) {
+        String sql = "SELECT play_time, starting_time, ending_time FROM time_logger \n" +
+                "WHERE (starting_time BETWEEN ? AND ?) \n" +
+                "OR (ending_time BETWEEN ? AND ?) \n" +
+                "AND uuid = ?";
+        try {
+            Connection conn = this.connect();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, beginningOfDayString);
+            pstmt.setString(2, endOfDayString);
+            pstmt.setString(3, beginningOfDayString);
+            pstmt.setString(4, endOfDayString);
+            pstmt.setString(5, uuid);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
+            Instant beginningOfDay = Instant.from(formatter.parse(beginningOfDayString));
+            Instant endOfDay = Instant.from(formatter.parse(endOfDayString));
+            long playtime = 0;
+
+            while (rs.next()) {
+
+                String startingTimeString = rs.getString("starting_time");
+                String endingTimeString = rs.getString("ending_time");
+
+                Instant startingTime = Instant.from(formatter.parse(startingTimeString));
+                Instant endingTime = Instant.from(formatter.parse(endingTimeString));
+
+                if ((startingTime.isAfter(beginningOfDay)) && (endingTime.isBefore(endOfDay))){
+                    playtime += rs.getLong("play_time");
+                }
+                else if (startingTime.isAfter(beginningOfDay)) {
+                    playtime += Duration.between(startingTime, endOfDay).toMillis();
+                }
+                else if (endingTime.isBefore(endOfDay)) {
+                    playtime += Duration.between(beginningOfDay, endingTime).toMillis();;
+                }
+            }
+            return playtime;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+        public long getLeftoverPlaytime(String uuid, String time1, String time2) {
         String sql = "SELECT play_time, ending_time FROM time_logger \n" +
                 "WHERE ? BETWEEN starting_time AND ending_time \n" +
                 "AND uuid = ?";
