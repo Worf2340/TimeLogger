@@ -7,9 +7,9 @@
   - Valid time units: seconds (s), minutes (m), hours (h), days (d).
 * `/playtime [player] on [date] <timezone>`
   - Checks playtime of a player on a certain date.
-  - Dates must be formated in the `yyyy-MM-dd` format.
-  - The optional timezone paramater can be added like this: `#tz:PST`.
-  - Omitting the timezone paramater will search in UTC.
+  - Dates must be formatted in the `yyyy-MM-dd` format.
+  - The optional timezone parameter can be added like this: `#tz:PST`.
+  - Omitting the timezone parameter will search in UTC.
   - Ex: `/playtime Worf2340 on 2019-08-03`
 * -`/playtime [player] from [date] [time] to [date] [time] <timezone>`
   - Checks player playtime in a datetime range. 
