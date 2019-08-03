@@ -10,7 +10,7 @@
   - Dates must be formatted in the `yyyy-MM-dd` format.
   - The optional timezone parameter can be added like this: `#tz:PST`.
   - Omitting the timezone parameter will search in UTC.
-  - Ex: `/playtime Worf2340 on 2019-08-03`
+  - Ex: `/playtime Worf2340 on 2019-08-03 #tz:PST`
 * -`/playtime [player] from [date] [time] to [date] [time] <timezone>`
   - Checks player playtime in a datetime range. 
   - Dates must be foramtted in the `yyyy-MM-dd` format, and times in the `HH:mm:ss` format (24h clock). 
