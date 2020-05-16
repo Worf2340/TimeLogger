@@ -120,7 +120,7 @@ public class SQLite {
         return 0;
     }
 
-    public Long getPlaytimeInDay (String uuid, String beginningOfDayString, String endOfDayString) {
+    Long getPlaytimeInDay(String uuid, String beginningOfDayString, String endOfDayString) {
         String sql = "SELECT play_time, starting_time, ending_time FROM time_logger \n" +
                 "WHERE (starting_time BETWEEN ? AND ?) \n" +
                 "OR (ending_time BETWEEN ? AND ?) \n" +
@@ -156,7 +156,7 @@ public class SQLite {
                     playtime += Duration.between(startingTime, endOfDay).toMillis();
                 }
                 else if (endingTime.isBefore(endOfDay)) {
-                    playtime += Duration.between(beginningOfDay, endingTime).toMillis();;
+                    playtime += Duration.between(beginningOfDay, endingTime).toMillis();
                 }
             }
             return playtime;
@@ -178,7 +178,6 @@ public class SQLite {
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, time1);
             pstmt.setString(2, uuid);
-            System.out.println(pstmt);
 
             ResultSet rs = pstmt.executeQuery();
 

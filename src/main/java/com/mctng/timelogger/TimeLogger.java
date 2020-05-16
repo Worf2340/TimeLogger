@@ -9,9 +9,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.UUID;
 
 public final class TimeLogger extends JavaPlugin {
 
@@ -34,8 +32,6 @@ public final class TimeLogger extends JavaPlugin {
 
         SQLHandler = new SQLite(this, "time_logger.db");
         SQLHandler.createNewTable();
-
-        startingHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
     }
 
     @Override
