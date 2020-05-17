@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
 
 @SuppressWarnings("Duplicates")
 public class SQLite {
@@ -15,7 +16,7 @@ public class SQLite {
     String fileName;
     TimeLogger plugin;
 
-    public SQLite(TimeLogger plugin, String fileName) {
+    SQLite(TimeLogger plugin, String fileName) {
         this.fileName = fileName;
         this.plugin = plugin;
     }
@@ -32,7 +33,7 @@ public class SQLite {
         return conn;
     }
 
-    public void createNewTable() {
+    void createNewTable() {
 
         // Create new table
         String sql = "CREATE TABLE IF NOT EXISTS time_logger (\n"
@@ -45,12 +46,13 @@ public class SQLite {
 
 
         try {
+            Class.forName("org.sqlite.JDBC");
             Connection conn = connect();
             Statement statement = conn.createStatement();
             statement.execute(sql);
             this.plugin.getLogger().info("Connected to SQLite database.");
             this.plugin.getLogger().info("Initialized SQLite table.");
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
 
@@ -73,7 +75,7 @@ public class SQLite {
     }
 
 
-    public long getPlaytime(String uuid, String time1, String time2) {
+    long getPlaytime(String uuid, String time1, String time2) {
 
         String sql;
         if ((time1 == null) && (time2 == null)){
@@ -168,7 +170,7 @@ public class SQLite {
     }
 
 
-        public long getLeftoverPlaytime(String uuid, String time1, String time2) {
+    private long getLeftoverPlaytime(String uuid, String time1, String time2) {
         String sql = "SELECT play_time, ending_time FROM time_logger \n" +
                 "WHERE ? BETWEEN starting_time AND ending_time \n" +
                 "AND uuid = ?";
@@ -204,6 +206,30 @@ public class SQLite {
         catch (SQLException e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+    ArrayList<String> getPlayers() {
+        String sql = "SELECT DISTINCT uuid FROM time_logger";
+
+        try {
+            Connection conn = this.connect();
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+
+            // loop through the result set
+
+            TimeLoggerPlayer currentPlayer;
+            String uuid;
+            ArrayList<String> playerList = new ArrayList<>();
+            while (rs.next()) {
+                uuid = rs.getString("uuid");
+                playerList.add(uuid);
+            }
+            return playerList;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

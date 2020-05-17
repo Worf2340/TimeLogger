@@ -22,6 +22,7 @@ public final class TimeLogger extends JavaPlugin {
         startingTimes = new HashMap<>();
         // Plugin startup logic
         this.getCommand("playtime").setExecutor(new Commands(this));
+        this.getCommand("playtimerankings").setExecutor(new PlaytimeRankingsCommand(this));
         this.getServer().getPluginManager().registerEvents(new LoginListener(this), this);
         this.getServer().getPluginManager().registerEvents(new LogoutListener(this), this);
 

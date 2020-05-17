@@ -10,3 +10,6 @@ commands:
   playtime:
     usage: /playtime [player] <time>
     permission: timelogger.playtime
+  playtimerankings:
+    usage: /playtimerankings
+

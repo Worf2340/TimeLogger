@@ -70,7 +70,7 @@ public class Commands implements CommandExecutor {
                     }
 
                 }
-                // /playtime [player] <time>
+                // /playtime [player] <time> OR
                 else if (args.length == 2) {
                     Long time;
                     ChronoUnit units;
@@ -400,7 +400,7 @@ public class Commands implements CommandExecutor {
         return true;
     }
 
-    private static String formatMillis(Long millis) {
+    static String formatMillis(Long millis) {
         long seconds = millis/1000;
         Duration duration = Duration.ofSeconds(seconds);
         return duration.toString()
@@ -434,6 +434,10 @@ public class Commands implements CommandExecutor {
         catch (DateTimeException e) {
             return null;
         }
+    }
+
+    void getPlaytimeSince(){
+
     }
 
 }
