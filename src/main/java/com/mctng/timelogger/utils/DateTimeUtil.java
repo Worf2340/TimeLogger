@@ -11,7 +11,6 @@ public class DateTimeUtil {
 
     /**
      * Returns a String formatted a time in milliseconds into HH:mm:ss
-     *
      * @param millis time in milliseconds
      * @return formatted time string
      */
@@ -27,7 +26,6 @@ public class DateTimeUtil {
 
     /**
      * Returns an Instant object which is a specified unit of time before another Instant.
-     *
      * @param timeString    a string representing a unit of time, formatted like so '30m'.
      * @param endingInstant an Instant object representing the starting Instant to subtract from.
      * @return an Instant object which is x amount of time before the starting instant.
@@ -66,6 +64,13 @@ public class DateTimeUtil {
 
     }
 
+    /**
+     * Parses a timezone string and returns ZoneID, recognizes basic US timezones.
+     *
+     * @param timeZoneString A string representing a timezone, must be a recognized American timezone or UTC offset.
+     * @return ZoneID representing parsed timezone.
+     * @throws DateTimeException if the timezone is invalid.
+     */
     public static ZoneId parseTimeZoneString(String timeZoneString) throws DateTimeException {
         HashMap<String, String> aliasMap = new HashMap<>();
         aliasMap.put("HST", "Pacific/Honolulu");
