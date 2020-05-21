@@ -1,22 +1,18 @@
 package com.mctng.timelogger.listeners;
 
-import com.mctng.timelogger.SQLite;
 import com.mctng.timelogger.TimeLogger;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Locale;
 
 public class LogoutListener implements Listener {
 
-    TimeLogger plugin;
+    private TimeLogger plugin;
 
     public LogoutListener(TimeLogger plugin) {
         this.plugin = plugin;

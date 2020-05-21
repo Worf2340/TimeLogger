@@ -9,7 +9,7 @@ import java.time.Instant;
 
 public class LoginListener implements Listener {
 
-    TimeLogger plugin;
+    private TimeLogger plugin;
 
     public LoginListener(TimeLogger plugin) {
         this.plugin = plugin;

@@ -7,229 +7,140 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 
-@SuppressWarnings("Duplicates")
 public class SQLite {
 
-    String fileName;
-    TimeLogger plugin;
+    private String fileName;
+    private TimeLogger plugin;
 
     SQLite(TimeLogger plugin, String fileName) {
         this.fileName = fileName;
         this.plugin = plugin;
     }
 
-    private Connection connect() {
+    private Connection connect() throws ClassNotFoundException, SQLException {
         // SQLite connection string
         String url = "jdbc:sqlite:" + plugin.getDataFolder() + "/" + fileName;
-        Connection conn = null;
-        try {
-            conn = DriverManager.getConnection(url);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-        }
-        return conn;
+        Class.forName("org.sqlite.JDBC");
+        return DriverManager.getConnection(url);
     }
 
-    void createNewTable() {
-
-        // Create new table
-        String sql = "CREATE TABLE IF NOT EXISTS time_logger (\n"
-                + " id integer PRIMARY KEY,\n"
-                + " uuid text NOT NULL,\n"
-                + " play_time integer NOT NULL,\n"
-                + " starting_time char NOT NULL,\n"
-                + " ending_time char NOT NULL\n"
-                + ");";
-
-
-        try {
-            Class.forName("org.sqlite.JDBC");
-            Connection conn = connect();
-            Statement statement = conn.createStatement();
-            statement.execute(sql);
-            this.plugin.getLogger().info("Connected to SQLite database.");
-            this.plugin.getLogger().info("Initialized SQLite table.");
+    void createTableIfNotExists() {
+        try (Connection c = connect(); Statement pstmt = c.createStatement()) {
+            String sql = "CREATE TABLE IF NOT EXISTS time_logger (\n"
+                    + " id integer PRIMARY KEY,\n"
+                    + " uuid text NOT NULL,\n"
+                    + " play_time integer NOT NULL,\n"
+                    + " starting_time char NOT NULL,\n"
+                    + " ending_time char NOT NULL\n"
+                    + ");";
+            pstmt.execute(sql);
+            System.out.println("Connection to SQLite has been established.");
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-
     }
-
 
     public void insertPlayer(Player player, long playTime, String startingTime, String endingTime) {
         String sql = "INSERT INTO time_logger(uuid,play_time,starting_time,ending_time) VALUES (?,?,?,?)";
-        try {
-            Connection conn = this.connect();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, player.getUniqueId().toString());
             pstmt.setLong(2, playTime);
             pstmt.setString(3, startingTime);
             pstmt.setString(4, endingTime);
             pstmt.executeUpdate();
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
+    long getPlaytime(String uuid) {
 
-    long getPlaytime(String uuid, String time1, String time2) {
+        String sql = "SELECT play_time FROM time_logger WHERE uuid = ?";
+        long timePlayed = 0;
 
-        String sql;
-        if ((time1 == null) && (time2 == null)){
-            sql = "SELECT play_time FROM time_logger \n" +
-                    "WHERE uuid = ?";
-        }
-        else {
-            sql = "SELECT play_time FROM time_logger \n" +
-                    "WHERE starting_time BETWEEN ? AND ? \n" +
-                    "AND uuid = ?";
-        }
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-
-        try {
-            Connection conn = this.connect();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            if ((time1 != null) && (time2 != null)) {
-                pstmt.setString(1, time1);
-                pstmt.setString(2, time2);
-                pstmt.setString(3, uuid);
-            }
-            else {
-                pstmt.setString(1, uuid);
-            }
+            pstmt.setString(1, uuid);
 
             ResultSet rs = pstmt.executeQuery();
 
             // loop through the result set
-            long timePlayed = 0;
+            timePlayed = 0;
             while (rs.next()) {
                 timePlayed += rs.getLong("play_time");
             }
 
-            if ((time1 == null) && (time2 == null)){
-                return timePlayed;
-            }
-            else {
-                return timePlayed + getLeftoverPlaytime(uuid, time1, time2);
-            }
-
-        } catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        return 0;
+        return timePlayed;
     }
 
-    Long getPlaytimeInDay(String uuid, String beginningOfDayString, String endOfDayString) {
+    long getPlaytimeBetweenTimes(String uuid, String time1, String time2) {
+
         String sql = "SELECT play_time, starting_time, ending_time FROM time_logger \n" +
-                "WHERE (starting_time BETWEEN ? AND ?) \n" +
-                "OR (ending_time BETWEEN ? AND ?) \n" +
+                "WHERE ((starting_time BETWEEN ? AND ?) \n" +
+                "OR (ending_time BETWEEN  ? AND ?)) \n" +
                 "AND uuid = ?";
-        try {
-            Connection conn = this.connect();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, beginningOfDayString);
-            pstmt.setString(2, endOfDayString);
-            pstmt.setString(3, beginningOfDayString);
-            pstmt.setString(4, endOfDayString);
+
+        long timePlayed = 0;
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, time1);
+            pstmt.setString(2, time2);
+            pstmt.setString(3, time1);
+            pstmt.setString(4, time2);
             pstmt.setString(5, uuid);
 
             ResultSet rs = pstmt.executeQuery();
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
-            Instant beginningOfDay = Instant.from(formatter.parse(beginningOfDayString));
-            Instant endOfDay = Instant.from(formatter.parse(endOfDayString));
-            long playtime = 0;
-
-            while (rs.next()) {
-
-                String startingTimeString = rs.getString("starting_time");
-                String endingTimeString = rs.getString("ending_time");
-
-                Instant startingTime = Instant.from(formatter.parse(startingTimeString));
-                Instant endingTime = Instant.from(formatter.parse(endingTimeString));
-
-                if ((startingTime.isAfter(beginningOfDay)) && (endingTime.isBefore(endOfDay))){
-                    playtime += rs.getLong("play_time");
-                }
-                else if (startingTime.isAfter(beginningOfDay)) {
-                    playtime += Duration.between(startingTime, endOfDay).toMillis();
-                }
-                else if (endingTime.isBefore(endOfDay)) {
-                    playtime += Duration.between(beginningOfDay, endingTime).toMillis();
-                }
-            }
-            return playtime;
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-
-    private long getLeftoverPlaytime(String uuid, String time1, String time2) {
-        String sql = "SELECT play_time, ending_time FROM time_logger \n" +
-                "WHERE ? BETWEEN starting_time AND ending_time \n" +
-                "AND uuid = ?";
-
-        try {
-            Connection conn = this.connect();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, time1);
-            pstmt.setString(2, uuid);
-
-            ResultSet rs = pstmt.executeQuery();
-
             // loop through the result set
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
+            Instant time1Instant = Instant.from(formatter.parse(time1));
+            Instant time2Instant = Instant.from(formatter.parse(time2));
+            while (rs.next()) {
+                // Convert ending and starting time strings to instants for easy time calculations
+                Instant resultEndingTime = Instant.from(formatter.parse(rs.getString("ending_time")));
+                Instant resultStartingTime = Instant.from(formatter.parse(rs.getString("starting_time")));
 
-            if (rs.next()) {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
-
-                String endingTimeString = rs.getString("ending_time");
-
-                TemporalAccessor temporalAccessor = formatter.parse(endingTimeString);
-                Instant endingTime = Instant.from(temporalAccessor);
-
-                TemporalAccessor temporalAccessor2 = formatter.parse(time1);
-                Instant time1Instant = Instant.from(temporalAccessor2);
-
-                return Duration.between(time1Instant, endingTime).toMillis();
-
+                if ((resultStartingTime.isAfter(time1Instant)) && (resultEndingTime.isBefore(time2Instant))) {
+                    timePlayed += rs.getLong("play_time");
+                } else if (resultStartingTime.isBefore(time1Instant)) {
+                    timePlayed += Duration.between(time1Instant, resultEndingTime).toMillis();
+                } else if (resultEndingTime.isAfter(time2Instant)) {
+                    timePlayed += Duration.between(resultStartingTime, time2Instant).toMillis();
+                }
             }
-            else {
-                return 0;
-            }
-        }
-        catch (SQLException e) {
+            return timePlayed;
+
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
             return 0;
         }
     }
+
+
     ArrayList<String> getPlayers() {
         String sql = "SELECT DISTINCT uuid FROM time_logger";
+        ArrayList<String> playerList = new ArrayList<>();
 
-        try {
-            Connection conn = this.connect();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             ResultSet rs = pstmt.executeQuery();
 
             // loop through the result set
 
             TimeLoggerPlayer currentPlayer;
             String uuid;
-            ArrayList<String> playerList = new ArrayList<>();
+            playerList = new ArrayList<>();
             while (rs.next()) {
                 uuid = rs.getString("uuid");
                 playerList.add(uuid);
             }
-            return playerList;
-        }
-        catch (SQLException e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
-            return null;
         }
+        return playerList;
     }
+
 }

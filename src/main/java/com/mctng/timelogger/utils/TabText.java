@@ -1,4 +1,4 @@
-package com.mctng.timelogger;
+package com.mctng.timelogger.utils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,7 +8,6 @@ public class TabText{
 
     private int chatHeight;
     private int[] tabs;
-    private int numPages;
     private String[] lines;
     private Map<Integer, String> charList = new HashMap<Integer, String>(){{
         put(-6, "�");
@@ -39,7 +38,7 @@ public class TabText{
      */
     public int setPageHeight(int chatHeight){
         this.chatHeight = chatHeight;
-        numPages = (int) Math.ceil((double)lines.length / (double)chatHeight);
+        int numPages = (int) Math.ceil((double) lines.length / (double) chatHeight);
         return numPages;
     }
 
@@ -86,9 +85,9 @@ public class TabText{
 
         // prepare lines iteration
         int tab;
-        String line;
-        String lines2 = "";
-        String fields[];
+        StringBuilder line;
+        StringBuilder lines2 = new StringBuilder();
+        String[] fields;
         Object[] field;
         int lineLen;
         int lineLen2;
@@ -96,7 +95,7 @@ public class TabText{
         for (int linePos = fromLine; linePos < toLine; ++linePos){
 
             fields = lines[linePos].split("`", -1);
-            line = "";
+            line = new StringBuilder();
             lineLen = 0;
             lineLen2 = 0;
 
@@ -105,25 +104,25 @@ public class TabText{
 
                 // add spaces to adjust horizontal position before if needed
                 if (!monospace && lineLen % 4 > 1){
-                    line += '.';
+                    line.append('.');
                     lineLen += 2;
                 }
                 // add spaces to fill width needed width too
                 while (lineLen < lineLen2){
-                    line += ' ';
+                    line.append(' ');
                     lineLen += (monospace)? 1: 4;
                 }
 
                 // get field and set line properties
                 tab = (monospace)? tabs[fieldPos]: tabs[fieldPos] * 6;
                 field = pxSubstring(fields[fieldPos], tab, monospace);
-                line += (String)field[0];
+                line.append((String) field[0]);
                 lineLen += (int)field[1];
                 lineLen2 += tab;
             }
-            lines2 += (lines2.length() < 1)? line: '\n'+line;
+            lines2.append((lines2.length() < 1) ? line.toString() : '\n' + line.toString());
         }
-        return lines2;
+        return lines2.toString();
     }
 
     // PIXEL WIDTH CALCULATION METHODS
@@ -186,9 +185,9 @@ public class TabText{
 
         // iterate lines
         String[] fields;
-        String line;
-        String field;
-        String field2;
+        StringBuilder line;
+        StringBuilder field;
+        StringBuilder field2;
         double num;
         boolean desc2;
         String[] lines2 = new String[lines.length];
@@ -197,37 +196,37 @@ public class TabText{
 
             // iterate fields
             fields = lines[i].replaceAll("�.", "").split("`", -1);
-            line = "";
+            line = new StringBuilder();
 
             for (int j = 0; j < keys.length; ++j){
 
                 // probe if field looks like a number
-                field = fields[keys[j]];
-                field2 = "~";
+                field = new StringBuilder(fields[keys[j]]);
+                field2 = new StringBuilder("~");
 
                 try{
-                    num = Double.parseDouble(field);
-                    for (int k = field.length(); k < 53; ++k) field2 += " ";
-                    field2 += field;
+                    num = Double.parseDouble(field.toString());
+                    for (int k = field.length(); k < 53; ++k) field2.append(" ");
+                    field2.append(field);
 
                     // reverse order if negative number
                     desc2 = (num < 0)? (desc[j] == false): desc[j];
                 }
                 catch (NumberFormatException e){
-                    field2 += field;
-                    for (int k = field.length(); k < 53; ++k) field2 += " ";
+                    field2.append(field);
+                    for (int k = field.length(); k < 53; ++k) field2.append(" ");
                     desc2 = desc[j];
                 }
 
                 // reverse field char values if reverse order (like in rot13)
                 if (desc2){
-                    field = "";
-                    for (char c: field2.toCharArray()) field += (char)(158 - c);
-                    field2 = field;
+                    field = new StringBuilder();
+                    for (char c : field2.toString().toCharArray()) field.append((char) (158 - c));
+                    field2 = new StringBuilder(field.toString());
                 }
 
                 // add field to line
-                line += field2;
+                line.append(field2);
             }
 
             // add line to lines
