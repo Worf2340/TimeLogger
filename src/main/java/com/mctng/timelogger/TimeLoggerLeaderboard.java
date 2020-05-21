@@ -6,7 +6,6 @@ import com.mctng.timelogger.utils.TabText;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
@@ -25,14 +24,6 @@ public class TimeLoggerLeaderboard {
         this.rankingListSize = leaderboardSize;
         this.plugin = plugin;
         initializeLeaderboard();
-    }
-
-    public TimeLoggerLeaderboard(int rankingListSize, TimeLogger plugin) {
-        this(rankingListSize, Instant.now().minus(30, ChronoUnit.DAYS), Instant.now(), plugin);
-    }
-
-    public TimeLoggerLeaderboard(TimeLogger plugin) {
-        this(10, Instant.now().minus(30, ChronoUnit.DAYS), Instant.now(), plugin);
     }
 
     public String getFormattedLeaderboard() {

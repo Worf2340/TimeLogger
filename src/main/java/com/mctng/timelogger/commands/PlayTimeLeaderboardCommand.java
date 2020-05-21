@@ -7,7 +7,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -27,82 +26,77 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        BukkitRunnable r = new BukkitRunnable() {
-            @SuppressWarnings("Duplicates")
-            public void run() {
-                TimeLoggerLeaderboard leaderboard;
+        int leaderboardSize;
+        Instant startingInstant;
+        Instant endingInstant;
 
-                // /playtimelb
-                if (args.length == 0) {
-                    LocalDate localDate = YearMonth.now().atDay(1);
-                    Instant startingInstant = localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
-                    leaderboard = new TimeLoggerLeaderboard(10, startingInstant, Instant.now(), plugin);
-                }
+        // /playtimelb
+        if (args.length == 0) {
+            LocalDate localDate = YearMonth.now().atDay(1);
+            startingInstant = localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+            endingInstant = Instant.now();
+            leaderboardSize = 10;
+        }
 
-                // /playtimelb [size]
-                else if (args.length == 1) {
-                    int leaderboardSize;
+        // /playtimelb [size]
+        else if (args.length == 1) {
 
-                    try {
-                        leaderboardSize = Integer.parseInt(args[0]);
-                    } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + "Invalid leaderboard size.");
-                        return;
-                    }
-
-                    LocalDate localDate = YearMonth.now().atDay(1);
-                    Instant startingInstant = localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
-
-                    leaderboard = new TimeLoggerLeaderboard(leaderboardSize, startingInstant, Instant.now(), plugin);
-                }
-
-                // /playtimelb [size] [time]
-                else if (args.length == 2) {
-                    int leaderboardSize;
-
-                    try {
-                        leaderboardSize = Integer.parseInt(args[0]);
-                    } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + "Invalid leaderboard size.");
-                        return;
-                    }
-
-                    Instant endingInstant = Instant.now();
-                    Instant startingInstant = DateTimeUtil.calculateStartingInstant(args[1], endingInstant);
-                    leaderboard = new TimeLoggerLeaderboard(leaderboardSize, startingInstant, endingInstant, plugin);
-                }
-
-                // /playtimelb [size] since [date]
-                else if (args.length == 3) {
-                    int leaderboardSize;
-                    try {
-                        leaderboardSize = Integer.parseInt(args[0]);
-                    } catch (NumberFormatException e) {
-                        sender.sendMessage(ChatColor.RED + "Invalid leaderboard size.");
-                        return;
-                    }
-
-                    LocalDate date;
-                    try {
-                        date = LocalDate.parse(args[2]);
-                    } catch (DateTimeParseException e) {
-                        sender.sendMessage(ChatColor.RED + "Please format your date in the yyyy-MM-dd format.");
-                        return;
-                    }
-
-                    Instant beginningOfDay = date.atStartOfDay(ZoneId.of("UTC")).toInstant();
-                    leaderboard = new TimeLoggerLeaderboard(leaderboardSize, beginningOfDay, Instant.now(), plugin);
-                } else {
-                    displayUsage(sender);
-                    return;
-                }
-
-                sender.sendMessage(leaderboard.getFormattedLeaderboard());
-
+            try {
+                leaderboardSize = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                sender.sendMessage(ChatColor.RED + "Invalid leaderboard size.");
+                return true;
             }
-        };
 
-        r.runTaskAsynchronously(plugin);
+            LocalDate localDate = YearMonth.now().atDay(1);
+            startingInstant = localDate.atStartOfDay(ZoneId.of("UTC")).toInstant();
+            endingInstant = Instant.now();
+        }
+
+        // /playtimelb [size] [time]
+        else if (args.length == 2) {
+
+            try {
+                leaderboardSize = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                sender.sendMessage(ChatColor.RED + "Invalid leaderboard size.");
+                return true;
+            }
+
+            endingInstant = Instant.now();
+            startingInstant = DateTimeUtil.calculateStartingInstant(args[1], endingInstant);
+        }
+
+        // /playtimelb [size] since [date]
+        else if (args.length == 3) {
+            try {
+                leaderboardSize = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                sender.sendMessage(ChatColor.RED + "Invalid leaderboard size.");
+                return true;
+            }
+
+            LocalDate date;
+            try {
+                date = LocalDate.parse(args[2]);
+            } catch (DateTimeParseException e) {
+                sender.sendMessage(ChatColor.RED + "Please format your date in the yyyy-MM-dd format.");
+                return true;
+            }
+
+            startingInstant = date.atStartOfDay(ZoneId.of("UTC")).toInstant();
+            endingInstant = Instant.now();
+        } else {
+            displayUsage(sender);
+            return true;
+        }
+
+
+        // Get leaderboard async
+        TimeLogger.newChain()
+                .asyncFirst(() -> new TimeLoggerLeaderboard(leaderboardSize, startingInstant, endingInstant, plugin))
+                .syncLast((leaderboard) -> sender.sendMessage(leaderboard.getFormattedLeaderboard()))
+                .execute();
 
         return true;
 

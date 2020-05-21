@@ -13,9 +13,9 @@ import java.util.UUID;
 
 public class TimeLoggerPlayer {
 
-    private OfflinePlayer player;
-    private TimeLogger plugin;
-    private String uuidString;
+    private final OfflinePlayer player;
+    private final TimeLogger plugin;
+    private final String uuidString;
 
     TimeLoggerPlayer(UUID uuid, TimeLogger plugin) {
         if (Bukkit.getPlayer(uuid) != null) {

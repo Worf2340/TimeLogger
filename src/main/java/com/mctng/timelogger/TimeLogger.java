@@ -1,5 +1,8 @@
 package com.mctng.timelogger;
 
+import co.aikar.taskchain.BukkitTaskChainFactory;
+import co.aikar.taskchain.TaskChain;
+import co.aikar.taskchain.TaskChainFactory;
 import com.mctng.timelogger.commands.PlayTimeCommand;
 import com.mctng.timelogger.commands.PlayTimeLeaderboardCommand;
 import com.mctng.timelogger.listeners.LoginListener;
@@ -14,13 +17,24 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
 
-public final class TimeLogger extends JavaPlugin {
+public class TimeLogger extends JavaPlugin {
 
     private SQLite SQLHandler;
     public HashMap<Player, Instant> startingTimes;
 
+    private static TaskChainFactory taskChainFactory;
+
+    public static <T> TaskChain<T> newChain() {
+        return taskChainFactory.newChain();
+    }
+
+    public static <T> TaskChain<T> newSharedChain(String name) {
+        return taskChainFactory.newSharedChain(name);
+    }
+
     @Override
     public void onEnable() {
+        taskChainFactory = BukkitTaskChainFactory.create(this);
         startingTimes = new HashMap<>();
         // Plugin startup logic
         this.getCommand("playtime").setExecutor(new PlayTimeCommand(this));
