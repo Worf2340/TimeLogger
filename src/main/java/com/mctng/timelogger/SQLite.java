@@ -1,7 +1,5 @@
 package com.mctng.timelogger;
 
-import org.bukkit.entity.Player;
-
 import java.sql.*;
 import java.time.Duration;
 import java.time.Instant;
@@ -9,6 +7,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+@SuppressWarnings("Duplicates")
 public class SQLite {
 
     private String fileName;
@@ -26,7 +25,7 @@ public class SQLite {
         return DriverManager.getConnection(url);
     }
 
-    void createTableIfNotExists() {
+    void createTableIfNotExistsTimeLogger() throws SQLException, ClassNotFoundException {
         try (Connection c = connect(); Statement pstmt = c.createStatement()) {
             String sql = "CREATE TABLE IF NOT EXISTS time_logger (\n"
                     + " id integer PRIMARY KEY,\n"
@@ -36,16 +35,39 @@ public class SQLite {
                     + " ending_time char NOT NULL\n"
                     + ");";
             pstmt.execute(sql);
-            System.out.println("Connection to SQLite has been established.");
+        }
+    }
+
+    void createTableIfNotExistsAutoSave() throws SQLException, ClassNotFoundException {
+        try (Connection c = connect(); Statement pstmt = c.createStatement()) {
+            String sql = "CREATE TABLE IF NOT EXISTS auto_save (\n"
+                    + " id integer PRIMARY KEY,\n"
+                    + " uuid text NOT NULL,\n"
+                    + " play_time integer NOT NULL,\n"
+                    + " starting_time char NOT NULL,\n"
+                    + " ending_time char NOT NULL\n"
+                    + ");";
+            pstmt.execute(sql);
+        }
+    }
+
+    public void insertPlayerTimeLogger(String uuid, long playTime, String startingTime, String endingTime) {
+        String sql = "INSERT INTO time_logger (uuid,play_time,starting_time,ending_time) VALUES (?,?,?,?)";
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, uuid);
+            pstmt.setLong(2, playTime);
+            pstmt.setString(3, startingTime);
+            pstmt.setString(4, endingTime);
+            pstmt.executeUpdate();
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public void insertPlayer(Player player, long playTime, String startingTime, String endingTime) {
-        String sql = "INSERT INTO time_logger(uuid,play_time,starting_time,ending_time) VALUES (?,?,?,?)";
+    public void insertPlayerAutoSave(String uuid, long playTime, String startingTime, String endingTime) {
+        String sql = "INSERT INTO auto_save (uuid,play_time,starting_time,ending_time) VALUES (?,?,?,?)";
         try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, player.getUniqueId().toString());
+            pstmt.setString(1, uuid);
             pstmt.setLong(2, playTime);
             pstmt.setString(3, startingTime);
             pstmt.setString(4, endingTime);
@@ -141,6 +163,49 @@ public class SQLite {
             e.printStackTrace();
         }
         return playerList;
+    }
+
+    void clearAutoSave() {
+        try (Connection c = connect(); Statement pstmt = c.createStatement()) {
+            String sql = "DELETE FROM auto_save";
+            pstmt.execute(sql);
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deletePlayerFromAutoSave(String uuid) {
+        String sql = "DELETE FROM auto_save WHERE uuid = ?";
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, uuid);
+            pstmt.executeUpdate();
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void moveFromAutoSaveToTimeLogger() throws SQLException, ClassNotFoundException {
+        ArrayList<TimeLoggerSavedPlayer> savedPlayers = new ArrayList<>();
+
+        try (Connection c = connect(); Statement pstmt = c.createStatement()) {
+            String sql = "SELECT * FROM auto_save";
+            ResultSet rs = pstmt.executeQuery(sql);
+
+            while (rs.next()) {
+                String uuid = rs.getString("uuid");
+                String startingTime = rs.getString("starting_time");
+                String endingTime = rs.getString("ending_time");
+                long playTime = rs.getLong("play_time");
+
+                savedPlayers.add(new TimeLoggerSavedPlayer(uuid, playTime, startingTime, endingTime));
+            }
+
+        }
+
+        for (TimeLoggerSavedPlayer player : savedPlayers) {
+            insertPlayerTimeLogger(player.getUuid(), player.getPlayTime(), player.getStartingTime(), player.getEndingTime());
+            deletePlayerFromAutoSave(player.getUuid());
+        }
     }
 
 }

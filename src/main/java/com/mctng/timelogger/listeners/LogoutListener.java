@@ -24,6 +24,8 @@ public class LogoutListener implements Listener {
         Instant startingTime = plugin.startingTimes.get(event.getPlayer());
         Instant currentTime = Instant.now();
         long timeElapsed = Duration.between(startingTime, currentTime).toMillis();
-        plugin.SQLHandler.insertPlayer(event.getPlayer(), timeElapsed, formatter.format(startingTime), formatter.format(currentTime));
+        plugin.getSQLHandler().deletePlayerFromAutoSave(event.getPlayer().getUniqueId().toString());
+        plugin.getSQLHandler().insertPlayerTimeLogger(event.getPlayer().getUniqueId().toString(), timeElapsed,
+                formatter.format(startingTime), formatter.format(currentTime));
     }
 }

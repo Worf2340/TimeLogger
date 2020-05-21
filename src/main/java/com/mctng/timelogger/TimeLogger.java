@@ -10,12 +10,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
 
 public final class TimeLogger extends JavaPlugin {
 
-    public SQLite SQLHandler;
+    private SQLite SQLHandler;
     public HashMap<Player, Instant> startingTimes;
 
     @Override
@@ -32,8 +33,19 @@ public final class TimeLogger extends JavaPlugin {
             dir.mkdir();
         }
 
-        SQLHandler = new SQLite(this, "time_logger.db");
-        SQLHandler.createTableIfNotExists();
+        try {
+            SQLHandler = new SQLite(this, "time_logger.db");
+            SQLHandler.createTableIfNotExistsTimeLogger();
+            SQLHandler.createTableIfNotExistsAutoSave();
+            SQLHandler.moveFromAutoSaveToTimeLogger();
+            this.getLogger().info("Initialized connection to SQLite.");
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+
+
+        AutoSaveRunnable autoSaveRunnable = new AutoSaveRunnable(this);
+        autoSaveRunnable.begin();
     }
 
     @Override
@@ -41,4 +53,7 @@ public final class TimeLogger extends JavaPlugin {
         // Plugin shutdown logic
     }
 
+    public SQLite getSQLHandler() {
+        return SQLHandler;
+    }
 }

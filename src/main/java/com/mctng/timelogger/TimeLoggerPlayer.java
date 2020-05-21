@@ -64,7 +64,7 @@ public class TimeLoggerPlayer {
             currentPlaytime = 0;
         }
 
-        return plugin.SQLHandler.getPlaytime(uuidString) + currentPlaytime;
+        return plugin.getSQLHandler().getPlaytime(uuidString) + currentPlaytime;
     }
 
     public long getPlayTimeInMillisBetweenInstants(Instant startingInstant, Instant endingInstant) {
@@ -95,7 +95,7 @@ public class TimeLoggerPlayer {
         String endingInstantString = formatter.format(endingInstant);
         String startingInstantString = formatter.format(startingInstant);
 
-        return plugin.SQLHandler.getPlaytimeBetweenTimes(uuidString, startingInstantString, endingInstantString) + currentPlaytime;
+        return plugin.getSQLHandler().getPlaytimeBetweenTimes(uuidString, startingInstantString, endingInstantString) + currentPlaytime;
     }
 
     private boolean isOnline() {

@@ -55,7 +55,7 @@ public class TimeLoggerLeaderboard {
     }
 
     private void initializeLeaderboard() {
-        ArrayList<String> playerList = plugin.SQLHandler.getPlayers();
+        ArrayList<String> playerList = plugin.getSQLHandler().getPlayers();
         leaderboard = new ArrayList<>();
 
 
