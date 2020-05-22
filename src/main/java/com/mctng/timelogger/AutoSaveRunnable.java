@@ -22,7 +22,11 @@ class AutoSaveRunnable {
         new BukkitRunnable() {
             @Override
             public void run() {
-                ArrayList<Player> onlinePlayers = new ArrayList<Player>(Bukkit.getOnlinePlayers());
+                ArrayList<Player> onlinePlayers = new ArrayList<>();
+                for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+                    onlinePlayers.add(p);
+                }
+
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
 
                 new BukkitRunnable() {
