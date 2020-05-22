@@ -19,13 +19,13 @@
   - Omitting the timezone paramater will search in UTC.
   - Ex: `/playtime Worf2340 from 2019-08-03 10:00:00 to 2019-08-03 12:00:00 #tz:PST`
 ### `/playtimelb` or `/playtimeleaderboard`
-* `/playtimelb
+* `/playtimelb`
   - Displays the top 10 players since the start of the month. 
-* `/playtimelb [size] <time>
+* `/playtimelb [size] <time>`
   - Displays the top specified number of players since the specified time.
   - If no time is specified, the number of top players since the start of the month will be displayed. 
   - Valid time units: seconds (s), minutes (m), hours (h), days (d).
-* `/playtimelb [size] since [date]
+* `/playtimelb [size] since [date]`
   - Displays the top specified number of players since a specified date. 
   - The date must be in `yyyy-MM-dd` format.
 ## Permissions
