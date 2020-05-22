@@ -6,6 +6,7 @@ import com.mctng.timelogger.utils.DateTimeUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.*;
 import java.time.format.DateTimeParseException;
@@ -22,29 +23,47 @@ public class PlayTimeCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, org.bukkit.command.Command command, String label, String[] args) {
 
+        TimeLoggerPlayer player;
+        Instant startingInstant;
+        Instant endingInstant;
+        String message1;
+        String message2;
         // /playtime [player]
         if (args.length == 1) {
-            TimeLoggerPlayer player = new TimeLoggerPlayer(args[0], plugin);
 
-            // Get playtime async
-            TimeLogger.newChain()
-                    .asyncFirst(player::getTotalPlayTimeInMillis)
-                    .syncLast((playTime) -> {
-                        if (playTime == 0) {
-                            sender.sendMessage(player.getGetColoredName() + ChatColor.GRAY +
-                                    " has never played on this server.");
-                        } else {
-                            sender.sendMessage(player.getGetColoredName() + ChatColor.GRAY +
-                                    " has played for " + DateTimeUtil.formatMillis(playTime) + " on this server");
+
+            if (args[0].equalsIgnoreCase("?")) {
+                displayUsage(sender);
+                return true;
+            }
+
+            player = new TimeLoggerPlayer(args[0], plugin);
+
+            // Calculate playtime async
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    long playTime = player.getTotalPlayTimeInMillis();
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            if (playTime == 0) {
+                                sender.sendMessage(player.getGetColoredName() + ChatColor.GRAY +
+                                        " has never played on this server.");
+                            } else {
+                                sender.sendMessage(player.getGetColoredName() + ChatColor.GRAY +
+                                        " has played for " + DateTimeUtil.formatMillis(playTime) + " on this server");
+                            }
                         }
-                    })
-                    .execute();
+                    }.runTask(plugin);
+                }
+            }.runTaskAsynchronously(plugin);
+            return true;
         }
 
         // /playtime [player] <time>
         else if (args.length == 2) {
 
-            Instant startingInstant;
             try {
                 startingInstant = DateTimeUtil.calculateStartingInstant(args[1], Instant.now());
             } catch (NumberFormatException e) {
@@ -56,21 +75,12 @@ public class PlayTimeCommand implements CommandExecutor {
             }
 
 
-            TimeLoggerPlayer player = new TimeLoggerPlayer(args[0], plugin);
-            // Get playtime async
-            TimeLogger.newChain()
-                    .asyncFirst(() -> player.getPlayTimeInMillisBetweenInstants(startingInstant, Instant.now()))
-                    .syncLast((playTime) -> {
-                        if (playTime == 0) {
-                            sender.sendMessage(player.getGetColoredName() + ChatColor.GRAY +
-                                    " has not played in the last " + args[1]);
-                        } else {
-                            sender.sendMessage(player.getGetColoredName() + ChatColor.GRAY +
-                                    " has played for " + DateTimeUtil.formatMillis(playTime) + " in the last " + args[1] + ".");
-                        }
-                    })
-                    .execute();
-
+            endingInstant = Instant.now();
+            player = new TimeLoggerPlayer(args[0], plugin);
+            message1 = player.getGetColoredName() + ChatColor.GRAY +
+                    " has not played in the last " + args[1];
+            message2 = player.getGetColoredName() + ChatColor.GRAY +
+                    " has played for %s in the last " + args[1] + ".";
         }
 
         // /playtime [player] on [date] <timezone>
@@ -109,26 +119,15 @@ public class PlayTimeCommand implements CommandExecutor {
                 return true;
             }
 
-            Instant beginningOfDay = date.atStartOfDay(timeZone).toInstant();
-            Instant endOfDay = date.atStartOfDay(timeZone).toInstant();
-
-            TimeLoggerPlayer player = new TimeLoggerPlayer(args[0], plugin);
-
-            // Get playtime async
-            TimeLogger.newChain()
-                    .asyncFirst(() -> player.getPlayTimeInMillisBetweenInstants(beginningOfDay, endOfDay))
-                    .syncLast((playTime) -> {
-                        if (playTime == 0) {
-                            sender.sendMessage(player.getGetColoredName() + ChatColor.GRAY +
-                                    " did not play on " +
-                                    args[2] + " in timezone " + timezoneString.toUpperCase() + ".");
-                        } else {
-                            sender.sendMessage(player.getGetColoredName() + ChatColor.GRAY +
-                                    " played for " + DateTimeUtil.formatMillis(playTime) + " on " +
-                                    args[2] + " in timezone " + timezoneString.toUpperCase() + ".");
-                        }
-                    })
-                    .execute();
+            startingInstant = date.atStartOfDay(timeZone).toInstant();
+            endingInstant = date.atStartOfDay(timeZone).toInstant();
+            player = new TimeLoggerPlayer(args[0], plugin);
+            message1 = player.getGetColoredName() + ChatColor.GRAY +
+                    " did not play on " +
+                    args[2] + " in timezone " + timezoneString.toUpperCase() + ".";
+            message2 = player.getGetColoredName() + ChatColor.GRAY +
+                    " played for %s " +
+                    args[2] + " in timezone " + timezoneString.toUpperCase() + ".";
         }
 
         // /playtime [player] from [date] [time] to [date] [time] <timezone>
@@ -170,29 +169,20 @@ public class PlayTimeCommand implements CommandExecutor {
                 return true;
             }
 
-            Instant startingInstant = startingDateTime.atZone(timeZone).toInstant();
-            Instant endingInstant = endingDateTime.atZone(timeZone).toInstant();
-
-            TimeLoggerPlayer player = new TimeLoggerPlayer(args[0], plugin);
-
-            // Get playtime async
-            TimeLogger.newChain()
-                    .asyncFirst(() -> player.getPlayTimeInMillisBetweenInstants(startingInstant, endingInstant))
-                    .syncLast((playTime) -> {
-                        if (playTime == 0) {
-                            sender.sendMessage(player.getGetColoredName() + ChatColor.GRAY +
-                                    " did not play in the specified time interval.");
-                        } else {
-                            sender.sendMessage(player.getGetColoredName() + ChatColor.GRAY +
-                                    " played for " + ChatColor.GRAY + DateTimeUtil.formatMillis(playTime) +
-                                    " in the specified time interval.");
-                        }
-                    })
-                    .execute();
+            startingInstant = startingDateTime.atZone(timeZone).toInstant();
+            endingInstant = endingDateTime.atZone(timeZone).toInstant();
+            player = new TimeLoggerPlayer(args[0], plugin);
+            message1 = player.getGetColoredName() + ChatColor.GRAY +
+                    " did not play in the specified time interval.";
+            message2 = player.getGetColoredName() + ChatColor.GRAY +
+                    " played for " + ChatColor.GRAY + " %s% in the specified time interval.";
 
         } else {
             displayUsage(sender);
+            return true;
         }
+
+        getPlayTimeAsync(sender, player, startingInstant, endingInstant, message1, message2);
         return true;
 
     }
@@ -203,6 +193,27 @@ public class PlayTimeCommand implements CommandExecutor {
         player.sendMessage(ChatColor.YELLOW + "/playtime [player] <time>");
         player.sendMessage(ChatColor.YELLOW + "/playtime [player] on [date] <#tz:timezone>");
         player.sendMessage(ChatColor.YELLOW + "/playtime [player] from [date] [time] to [date] [time] <#tz:timezone>");
+    }
+
+    private void getPlayTimeAsync(CommandSender sender, TimeLoggerPlayer player,
+                                  Instant startingInstant, Instant endingInstant,
+                                  String message1, String message2) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                long playTime = player.getPlayTimeInMillisBetweenInstants(startingInstant, endingInstant);
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if (playTime == 0) {
+                            sender.sendMessage(message1);
+                        } else {
+                            sender.sendMessage(String.format(message2, DateTimeUtil.formatMillis(playTime)));
+                        }
+                    }
+                }.runTask(plugin);
+            }
+        }.runTaskAsynchronously(plugin);
     }
 
 

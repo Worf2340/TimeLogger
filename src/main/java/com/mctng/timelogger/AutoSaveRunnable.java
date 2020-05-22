@@ -40,8 +40,8 @@ class AutoSaveRunnable {
                             plugin.getSQLHandler().insertPlayerAutoSave(player.getUniqueId().toString(), timeElapsed,
                                     formatter.format(startingTime), formatter.format(currentTime));
 
+
                         }
-                        System.out.println("Added player");
                     }
                 }.runTaskAsynchronously(plugin);
             }

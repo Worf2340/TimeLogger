@@ -7,6 +7,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -40,6 +41,11 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
 
         // /playtimelb [size]
         else if (args.length == 1) {
+
+            if (args[0].equalsIgnoreCase("?")) {
+                displayUsage(sender);
+                return true;
+            }
 
             try {
                 leaderboardSize = Integer.parseInt(args[0]);
@@ -93,10 +99,19 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
 
 
         // Get leaderboard async
-        TimeLogger.newChain()
-                .asyncFirst(() -> new TimeLoggerLeaderboard(leaderboardSize, startingInstant, endingInstant, plugin))
-                .syncLast((leaderboard) -> sender.sendMessage(leaderboard.getFormattedLeaderboard()))
-                .execute();
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                TimeLoggerLeaderboard leaderboard = new TimeLoggerLeaderboard
+                        (leaderboardSize, startingInstant, endingInstant, plugin);
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        sender.sendMessage(leaderboard.getFormattedLeaderboard());
+                    }
+                }.runTask(plugin);
+            }
+        }.runTaskAsynchronously(plugin);
 
         return true;
 
@@ -104,6 +119,7 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
 
     private void displayUsage(CommandSender sender) {
         sender.sendMessage(ChatColor.YELLOW + "USAGES:");
+        sender.sendMessage(ChatColor.YELLOW + "/playtimelb (default size=10, date=beginning of month)");
         sender.sendMessage(ChatColor.YELLOW + "/playtimelb <size> <time>");
         sender.sendMessage(ChatColor.YELLOW + "/playtimelb [size] since [date]");
     }

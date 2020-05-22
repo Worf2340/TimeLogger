@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/TimeLogger.iml" filepath="$PROJECT_DIR$/TimeLogger.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/TimeLogger.main.iml" filepath="$PROJECT_DIR$/.idea/modules/TimeLogger.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/TimeLogger.test.iml" filepath="$PROJECT_DIR$/.idea/modules/TimeLogger.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/com.mctng.TimeLogger.iml" filepath="$PROJECT_DIR$/.idea/modules/com.mctng.TimeLogger.iml" />
     </modules>
   </component>
 </project>

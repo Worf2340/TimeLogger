@@ -2,6 +2,7 @@ package com.mctng.timelogger;
 
 import com.mctng.timelogger.utils.DateTimeUtil;
 import com.mctng.timelogger.utils.TabText;
+import org.bukkit.ChatColor;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -30,7 +31,7 @@ public class TimeLoggerLeaderboard {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("UTC"));
 
         String date = formatter.format(startingInstant);
-        String header = "--------------------------\nPlayTime leaderboard since " + date + ":\n------------------------\n";
+        String header = ChatColor.GOLD + "" + ChatColor.GOLD + "PlayTime Leaderboard Since " + date + ":\n";
         StringBuilder tabTextBuilder = new StringBuilder("RANK`NAME`PLAYTIME\n");
 
         for (int i = 0; i < this.rankingListSize; i++) {
