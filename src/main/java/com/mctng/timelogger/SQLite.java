@@ -1,7 +1,5 @@
 package com.mctng.timelogger;
 
-import org.bukkit.scheduler.BukkitRunnable;
-
 import java.sql.*;
 import java.time.Duration;
 import java.time.Instant;
@@ -167,17 +165,6 @@ public class SQLite {
         return playerList;
     }
 
-    boolean clearAutoSave() {
-        try (Connection c = connect(); Statement pstmt = c.createStatement()) {
-            String sql = "DELETE FROM auto_save";
-            pstmt.execute(sql);
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
     public void deletePlayerFromAutoSave(String uuid) {
         String sql = "DELETE FROM auto_save WHERE uuid = ?";
         try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -210,21 +197,6 @@ public class SQLite {
             insertPlayerTimeLogger(player.getUuid(), player.getPlayTime(), player.getStartingTime(), player.getEndingTime());
             deletePlayerFromAutoSave(player.getUuid());
         }
-    }
-
-    public void doAsyncGetBoolean(final String uuid, final GetTimeCallBack callBack) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                long playTime = getPlaytime(uuid);
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        callBack.onQueryDone(playTime);
-                    }
-                }.runTask(plugin);
-            }
-        }.runTaskAsynchronously(plugin);
     }
 
 }

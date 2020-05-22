@@ -10,15 +10,15 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-public class AutoSaveRunnable {
+class AutoSaveRunnable {
 
     private TimeLogger plugin;
 
-    public AutoSaveRunnable(TimeLogger plugin) {
+    AutoSaveRunnable(TimeLogger plugin) {
         this.plugin = plugin;
     }
 
-    public void begin() {
+    void begin() {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -28,7 +28,7 @@ public class AutoSaveRunnable {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        for (Player player : Bukkit.getOnlinePlayers()) {
+                        for (Player player : onlinePlayers) {
                             Instant startingTime = plugin.startingTimes.get(player);
                             Instant currentTime = Instant.now();
                             long timeElapsed = Duration.between(startingTime, currentTime).toMillis();
@@ -36,12 +36,12 @@ public class AutoSaveRunnable {
                             plugin.getSQLHandler().insertPlayerAutoSave(player.getUniqueId().toString(), timeElapsed,
                                     formatter.format(startingTime), formatter.format(currentTime));
 
-                            System.out.println("Added player");
                         }
+                        System.out.println("Added player");
                     }
                 }.runTaskAsynchronously(plugin);
             }
-        }.runTaskTimer(plugin, 1L, 100L);
+        }.runTaskTimer(plugin, 1L, 1200L);
     }
 
 }
