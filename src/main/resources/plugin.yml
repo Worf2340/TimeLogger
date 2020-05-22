@@ -8,8 +8,24 @@ website: www.mctng.com
 
 commands:
   playtime:
-    usage: /playtime [player] <time>
+    usage: /playtime [player] <time> OR /playtime [player] since [date] OR /playtime [player] from [date] [time] to [date] [time]
     permission: timelogger.playtime
   playtimelb:
-    usage: /playtimerankings
+    usage: /playtimelb OR /playtimelb
+    permission: timelogger.playtimelb
+    aliases: [playtimeleaderboard]
+
+permissions:
+  timelogger.playtime:
+    description: Allow all /playtime commands.
+    default: op
+  timelogger.playtimelb:
+    description: Allow /playtimelb command.
+    default: op
+  timelogger.playtimelb.custom:
+    description: Allow all /playtimelb commands.
+    default: op
+    children:
+      timelogger.playtimelb: true
+
 

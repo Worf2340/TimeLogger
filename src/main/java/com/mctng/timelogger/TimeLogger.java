@@ -4,6 +4,7 @@ import com.mctng.timelogger.commands.PlayTimeCommand;
 import com.mctng.timelogger.commands.PlayTimeLeaderboardCommand;
 import com.mctng.timelogger.listeners.LoginListener;
 import com.mctng.timelogger.listeners.LogoutListener;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,6 +26,10 @@ public class TimeLogger extends JavaPlugin {
         // Plugin startup logic
         this.getCommand("playtime").setExecutor(new PlayTimeCommand(this));
         this.getCommand("playtimelb").setExecutor(new PlayTimeLeaderboardCommand(this));
+        this.getCommand("playtime")
+                .setPermissionMessage(ChatColor.RED + "You don't have permission to perform that command!");
+        this.getCommand("playtimelb")
+                .setPermissionMessage(ChatColor.RED + "You don't have permission to perform that command!");
         this.getServer().getPluginManager().registerEvents(new LoginListener(this), this);
         this.getServer().getPluginManager().registerEvents(new LogoutListener(this), this);
 

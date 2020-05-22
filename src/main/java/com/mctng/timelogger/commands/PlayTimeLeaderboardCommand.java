@@ -42,6 +42,11 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
         // /playtimelb [size]
         else if (args.length == 1) {
 
+            if (!(sender.hasPermission("timelogger.playtimelb.custom"))) {
+                sender.sendMessage(ChatColor.RED + "You don't have permission to perform that command!");
+                return true;
+            }
+
             if (args[0].equalsIgnoreCase("?")) {
                 displayUsage(sender);
                 return true;
@@ -62,6 +67,11 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
         // /playtimelb [size] [time]
         else if (args.length == 2) {
 
+            if (!(sender.hasPermission("timelogger.playtimelb.custom"))) {
+                sender.sendMessage(ChatColor.RED + "You don't have permission to perform that command!");
+                return true;
+            }
+
             try {
                 leaderboardSize = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
@@ -75,6 +85,12 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
 
         // /playtimelb [size] since [date]
         else if (args.length == 3) {
+
+            if (!(sender.hasPermission("timelogger.playtimelb.custom"))) {
+                sender.sendMessage(ChatColor.RED + "You don't have permission to perform that command!");
+                return true;
+            }
+
             try {
                 leaderboardSize = Integer.parseInt(args[0]);
             } catch (NumberFormatException e) {
