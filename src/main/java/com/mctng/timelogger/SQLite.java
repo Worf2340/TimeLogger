@@ -13,18 +13,17 @@ import static com.mctng.timelogger.utils.DateTimeUtil.isInstantBeforeOrEquals;
 @SuppressWarnings("Duplicates")
 public class SQLite {
 
-    private String datafolder;
+    private String fileName;
+    private TimeLogger plugin;
 
-    SQLite(TimeLogger plugin) {
-        this.datafolder = plugin.getDataFolder().toString();
-    }
-
-    SQLite(String dataFolder) {
-        this.datafolder = dataFolder;
+    SQLite(TimeLogger plugin, String fileName) {
+        this.fileName = fileName;
+        this.plugin = plugin;
     }
 
     private Connection connect() throws ClassNotFoundException, SQLException {
-        String url = "jdbc:sqlite:" + this.datafolder + "\\time_logger.db";
+        // SQLite connection string
+        String url = "jdbc:sqlite:" + plugin.getDataFolder() + "/" + fileName;
         Class.forName("org.sqlite.JDBC");
         return DriverManager.getConnection(url);
     }

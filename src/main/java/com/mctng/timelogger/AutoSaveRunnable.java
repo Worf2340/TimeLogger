@@ -41,7 +41,6 @@ class AutoSaveRunnable {
 
                             plugin.getSQLHandler().insertPlayerAutoSave(uuid.toString(), timeElapsed,
                                     formatter.format(startingTime), formatter.format(currentTime));
-                            System.out.println("Done");
                         }
                     }
                 }.runTaskAsynchronously(plugin);

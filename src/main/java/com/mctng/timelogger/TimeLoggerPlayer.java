@@ -54,14 +54,14 @@ public class TimeLoggerPlayer {
         } else {
             chatColor = ChatColor.RED;
         }
-
+        
         return chatColor + playerName;
     }
 
     public long getTotalPlayTimeInMillis() {
         long currentPlaytime;
         if (this.isOnline()) {
-            Instant playerJoinTime = plugin.startingTimes.get(player);
+            Instant playerJoinTime = plugin.startingTimes.get(player.getUniqueId());
             currentPlaytime = Duration.between(playerJoinTime, Instant.now()).toMillis();
         } else {
             currentPlaytime = 0;
