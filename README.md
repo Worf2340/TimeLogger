@@ -32,7 +32,7 @@
   - Displays the top specified number of players since a specified date. 
   - The date must be in `yyyy-MM-dd` format.
   - Ex: `/playtimelb 10 since 2020-05-01`
-* `/playtimelb [size] from [date] [time] to [date] [time] <timezone>
+* `/playtimelb [size] from [date] [time] to [date] [time] <timezone>`
   - Displays the top number of specified players between two datetimes. 
   - The datetime format must be `yyyy-MM-dd HH:mm:ss`.
   - The timezone is optional. 
