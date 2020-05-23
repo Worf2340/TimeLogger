@@ -1,5 +1,7 @@
 package com.mctng.timelogger.utils;
 
+import net.minecraft.server.v1_7_R4.ExceptionInvalidNumber;
+
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.Instant;
@@ -33,11 +35,15 @@ public class DateTimeUtil {
      * @throws NumberFormatException    if the time is formatted incorrectly.
      */
     public static Instant calculateStartingInstant(String timeString, Instant endingInstant) throws IllegalArgumentException {
-        long time;
+        Long time;
         try {
             time = Long.parseLong(timeString.substring(0, timeString.length() - 1));
         } catch (NumberFormatException e) {
             throw new NumberFormatException("Invalid amount of time");
+        }
+
+        if (time <= 0) {
+            throw new ExceptionInvalidNumber("Negative time!");
         }
 
         String unit = timeString.substring(timeString.length() - 1).toLowerCase();

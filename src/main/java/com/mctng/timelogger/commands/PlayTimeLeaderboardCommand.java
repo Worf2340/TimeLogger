@@ -3,6 +3,7 @@ package com.mctng.timelogger.commands;
 import com.mctng.timelogger.TimeLogger;
 import com.mctng.timelogger.TimeLoggerLeaderboard;
 import com.mctng.timelogger.utils.DateTimeUtil;
+import net.minecraft.server.v1_7_R4.ExceptionInvalidNumber;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -30,6 +31,7 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
         Instant startingInstant;
         Instant endingInstant;
         String timeString;
+        TimeLoggerLeaderboard leaderboard;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("UTC"));
 
         // /playtimelb
@@ -89,8 +91,11 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
             endingInstant = Instant.now();
             try {
                 startingInstant = DateTimeUtil.calculateStartingInstant(args[1], endingInstant);
+            } catch (NumberFormatException | ExceptionInvalidNumber e) {
+                sender.sendMessage(ChatColor.RED + "Please enter a valid amount of time.");
+                return true;
             } catch (IllegalArgumentException e) {
-                sender.sendMessage(ChatColor.RED + "Invalid unit of time.");
+                sender.sendMessage(ChatColor.RED + "Please enter a valid unit of time.");
                 return true;
             }
 
@@ -204,12 +209,18 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
         }
 
 
+        if (leaderboardSize < 1) {
+            sender.sendMessage(ChatColor.RED + "Invalid leaderboard size.");
+            return true;
+        }
+        leaderboard = new TimeLoggerLeaderboard
+                (leaderboardSize, startingInstant, endingInstant, plugin);
+
         // Get leaderboard async
         new BukkitRunnable() {
             @Override
             public void run() {
-                TimeLoggerLeaderboard leaderboard = new TimeLoggerLeaderboard
-                        (leaderboardSize, startingInstant, endingInstant, plugin);
+                leaderboard.initializeLeaderboard();
                 new BukkitRunnable() {
                     @Override
                     public void run() {

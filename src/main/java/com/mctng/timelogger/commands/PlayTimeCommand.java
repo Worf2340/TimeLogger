@@ -3,6 +3,7 @@ package com.mctng.timelogger.commands;
 import com.mctng.timelogger.TimeLogger;
 import com.mctng.timelogger.TimeLoggerPlayer;
 import com.mctng.timelogger.utils.DateTimeUtil;
+import net.minecraft.server.v1_7_R4.ExceptionInvalidNumber;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -64,7 +65,7 @@ public class PlayTimeCommand implements CommandExecutor {
 
             try {
                 startingInstant = DateTimeUtil.calculateStartingInstant(args[1], Instant.now());
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException | ExceptionInvalidNumber e) {
                 sender.sendMessage(ChatColor.RED + "Please enter a valid amount of time.");
                 return true;
             } catch (IllegalArgumentException e) {
@@ -189,7 +190,7 @@ public class PlayTimeCommand implements CommandExecutor {
             message1 = player.getGetColoredName() + ChatColor.GRAY +
                     " did not play in the specified time interval.";
             message2 = player.getGetColoredName() + ChatColor.GRAY +
-                    " played for " + ChatColor.GRAY + " %s in the specified time interval.";
+                    " played for " + ChatColor.GRAY + "%s in the specified time interval.";
 
         } else {
             displayUsage(sender);

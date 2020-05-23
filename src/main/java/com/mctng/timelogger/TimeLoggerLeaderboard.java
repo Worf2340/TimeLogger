@@ -2,7 +2,9 @@ package com.mctng.timelogger;
 
 import com.mctng.timelogger.utils.DateTimeUtil;
 import com.mctng.timelogger.utils.TabText;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -18,20 +20,31 @@ public class TimeLoggerLeaderboard {
     private Instant endingInstant;
     private TimeLogger plugin;
     private ArrayList<TimeLoggerRankedPlayer> leaderboard;
+    private ArrayList<String> onlinePlayers;
 
     public TimeLoggerLeaderboard(int leaderboardSize, Instant startingInstant, Instant endingInstant, TimeLogger plugin) {
         this.startingInstant = startingInstant;
         this.endingInstant = endingInstant;
         this.rankingListSize = leaderboardSize;
         this.plugin = plugin;
-        initializeLeaderboard();
+        this.onlinePlayers = new ArrayList<>();
+
+        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+            onlinePlayers.add(p.getUniqueId().toString());
+        }
+
     }
 
     public String getFormattedLeaderboard(String timeString) {
+
+        if (leaderboard.size() == 0) {
+            return ChatColor.YELLOW + "No players played during that time period.";
+        }
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("UTC"));
 
         String date = formatter.format(startingInstant);
-        String header = ChatColor.YELLOW + "PlayTime Leaderboard" + timeString + ":\n";
+        String header = ChatColor.YELLOW + "PlayTime Leaderboard " + timeString + ":\n";
         StringBuilder tabTextBuilder = new StringBuilder("RANK`NAME`PLAYTIME\n");
         for (int i = 0; i < this.rankingListSize; i++) {
             tabTextBuilder
@@ -49,11 +62,16 @@ public class TimeLoggerLeaderboard {
         return header + tt.getPage(1, false);
     }
 
-    private void initializeLeaderboard() {
+    public void initializeLeaderboard() {
         ArrayList<String> playerList = plugin.getSQLHandler().getPlayers();
+
+        for (String uuid : onlinePlayers) {
+            if (!(playerList.contains(uuid))) {
+                playerList.add(uuid);
+            }
+        }
+
         leaderboard = new ArrayList<>();
-
-
         for (String uuidString : playerList) {
 
             TimeLoggerRankedPlayer player = new TimeLoggerRankedPlayer(UUID.fromString(uuidString), plugin);
