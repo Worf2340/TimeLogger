@@ -1,32 +1,32 @@
 package com.mctng.timelogger;
 
-public class TimeLoggerSavedPlayer {
+class TimeLoggerSavedPlayer {
 
     private String uuid;
     private long playTime;
     private String startingTime;
     private String endingTime;
 
-    public TimeLoggerSavedPlayer(String uuid, long playTime, String startingTime, String endingTime) {
+    TimeLoggerSavedPlayer(String uuid, long playTime, String startingTime, String endingTime) {
         this.uuid = uuid;
         this.playTime = playTime;
         this.startingTime = startingTime;
         this.endingTime = endingTime;
     }
 
-    public String getUuid() {
+    String getUuid() {
         return uuid;
     }
 
-    public long getPlayTime() {
+    long getPlayTime() {
         return playTime;
     }
 
-    public String getStartingTime() {
+    String getStartingTime() {
         return startingTime;
     }
 
-    public String getEndingTime() {
+    String getEndingTime() {
         return endingTime;
     }
 }

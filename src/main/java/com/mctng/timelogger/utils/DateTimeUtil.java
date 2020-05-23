@@ -83,4 +83,12 @@ public class DateTimeUtil {
         return ZoneId.of(timeZoneString, aliasMap);
     }
 
+    public static boolean isInstantAfterOrEquals(Instant instant1, Instant instant2) {
+        return (instant1.isAfter(instant2) || instant1.equals(instant2));
+    }
+
+    public static boolean isInstantBeforeOrEquals(Instant instant1, Instant instant2) {
+        return (instant1.isBefore(instant2) || instant1.equals(instant2));
+    }
+
 }

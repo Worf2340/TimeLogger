@@ -39,7 +39,7 @@ public class TimeLogger extends JavaPlugin {
         }
 
         try {
-            SQLHandler = new SQLite(this, "time_logger.db");
+            SQLHandler = new SQLite(this);
             SQLHandler.createTableIfNotExistsTimeLogger();
             SQLHandler.createTableIfNotExistsAutoSave();
             SQLHandler.moveFromAutoSaveToTimeLogger();

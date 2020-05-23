@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="time_logger.db" uuid="db8a8cb3-10d3-4e64-8bb8-69ee5f81a7c5">
-      <driver-ref>sqlite.xerial</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:C:\Users\vedan\Documents\Minecraft Modding\Fin Plugins\TimeLogger Server - 1.7.10\plugins\TimeLogger\time_logger.db</jdbc-url>
-      <driver-properties>
-        <property name="enable_load_extension" value="true" />
-      </driver-properties>
-    </data-source>
-    <data-source source="LOCAL" name="time_logger" uuid="6b8f4563-70d1-4723-a99a-138c44bcf2ca">
+    <data-source source="LOCAL" name="time_logger" uuid="a733a406-8e44-4bdb-ab3e-e5691c48fdae">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>

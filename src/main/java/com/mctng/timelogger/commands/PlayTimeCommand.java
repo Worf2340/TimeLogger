@@ -119,13 +119,14 @@ public class PlayTimeCommand implements CommandExecutor {
             }
 
             startingInstant = date.atStartOfDay(timeZone).toInstant();
-            endingInstant = date.atStartOfDay(timeZone).toInstant();
+            endingInstant = date.atTime(23, 59, 59).atZone(timeZone).toInstant();
+
             player = new TimeLoggerPlayer(args[0], plugin);
             message1 = player.getGetColoredName() + ChatColor.GRAY +
                     " did not play on " +
                     args[2] + " in timezone " + timezoneString.toUpperCase() + ".";
             message2 = player.getGetColoredName() + ChatColor.GRAY +
-                    " played for %s " +
+                    " played for %s on " +
                     args[2] + " in timezone " + timezoneString.toUpperCase() + ".";
         }
 
@@ -174,7 +175,7 @@ public class PlayTimeCommand implements CommandExecutor {
             message1 = player.getGetColoredName() + ChatColor.GRAY +
                     " did not play in the specified time interval.";
             message2 = player.getGetColoredName() + ChatColor.GRAY +
-                    " played for " + ChatColor.GRAY + " %s% in the specified time interval.";
+                    " played for " + ChatColor.GRAY + " %s in the specified time interval.";
 
         } else {
             displayUsage(sender);

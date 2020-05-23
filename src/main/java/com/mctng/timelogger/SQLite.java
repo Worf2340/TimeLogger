@@ -7,20 +7,24 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+import static com.mctng.timelogger.utils.DateTimeUtil.isInstantAfterOrEquals;
+import static com.mctng.timelogger.utils.DateTimeUtil.isInstantBeforeOrEquals;
+
 @SuppressWarnings("Duplicates")
 public class SQLite {
 
-    private String fileName;
-    private TimeLogger plugin;
+    private String datafolder;
 
-    SQLite(TimeLogger plugin, String fileName) {
-        this.fileName = fileName;
-        this.plugin = plugin;
+    SQLite(TimeLogger plugin) {
+        this.datafolder = plugin.getDataFolder().toString();
+    }
+
+    SQLite(String dataFolder) {
+        this.datafolder = dataFolder;
     }
 
     private Connection connect() throws ClassNotFoundException, SQLException {
-        // SQLite connection string
-        String url = "jdbc:sqlite:" + plugin.getDataFolder() + "/" + fileName;
+        String url = "jdbc:sqlite:" + this.datafolder + "\\time_logger.db";
         Class.forName("org.sqlite.JDBC");
         return DriverManager.getConnection(url);
     }
@@ -100,41 +104,53 @@ public class SQLite {
         return timePlayed;
     }
 
-    long getPlaytimeBetweenTimes(String uuid, String time1, String time2) {
+    // TODO: Fix method
 
+    long getPlaytimeBetweenTimes(String uuid, String queryStartingTime, String queryEndingTime) {
         String sql = "SELECT play_time, starting_time, ending_time FROM time_logger \n" +
-                "WHERE ((starting_time BETWEEN ? AND ?) \n" +
-                "OR (ending_time BETWEEN  ? AND ?)) \n" +
+                "WHERE (((? BETWEEN starting_time AND ending_time) \n" +
+                "OR (? BETWEEN starting_time AND ending_time)) \n" +
+                "OR (((ending_time BETWEEN  ? AND ?)) \n" +
+                "OR ((starting_time BETWEEN ? AND ?)))) \n" +
                 "AND uuid = ?";
 
-        long timePlayed = 0;
         try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, time1);
-            pstmt.setString(2, time2);
-            pstmt.setString(3, time1);
-            pstmt.setString(4, time2);
-            pstmt.setString(5, uuid);
+            pstmt.setString(1, queryStartingTime);
+            pstmt.setString(2, queryEndingTime);
+            pstmt.setString(3, queryStartingTime);
+            pstmt.setString(4, queryEndingTime);
+            pstmt.setString(5, queryStartingTime);
+            pstmt.setString(6, queryEndingTime);
+            pstmt.setString(7, uuid);
 
             ResultSet rs = pstmt.executeQuery();
 
             // loop through the result set
+            long playTime = 0;
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
-            Instant time1Instant = Instant.from(formatter.parse(time1));
-            Instant time2Instant = Instant.from(formatter.parse(time2));
+            Instant queryStartingInstant = Instant.from(formatter.parse(queryStartingTime));
+            Instant queryEndingInstant = Instant.from(formatter.parse(queryEndingTime));
             while (rs.next()) {
                 // Convert ending and starting time strings to instants for easy time calculations
-                Instant resultEndingTime = Instant.from(formatter.parse(rs.getString("ending_time")));
-                Instant resultStartingTime = Instant.from(formatter.parse(rs.getString("starting_time")));
+                Instant resultEndingInstant = Instant.from(formatter.parse(rs.getString("ending_time")));
+                Instant resultStartingInstant = Instant.from(formatter.parse(rs.getString("starting_time")));
 
-                if ((resultStartingTime.isAfter(time1Instant)) && (resultEndingTime.isBefore(time2Instant))) {
-                    timePlayed += rs.getLong("play_time");
-                } else if (resultStartingTime.isBefore(time1Instant)) {
-                    timePlayed += Duration.between(time1Instant, resultEndingTime).toMillis();
-                } else if (resultEndingTime.isAfter(time2Instant)) {
-                    timePlayed += Duration.between(resultStartingTime, time2Instant).toMillis();
+
+                if (isInstantAfterOrEquals(resultStartingInstant, queryStartingInstant)
+                        && isInstantBeforeOrEquals(resultEndingInstant, queryEndingInstant)) {
+                    playTime += Duration.between(resultStartingInstant, resultEndingInstant).toMillis();
+                } else if (isInstantAfterOrEquals(resultStartingInstant, queryStartingInstant)
+                        && isInstantAfterOrEquals(resultEndingInstant, queryEndingInstant)) {
+                    playTime += Duration.between(resultStartingInstant, queryEndingInstant).toMillis();
+                } else if (isInstantBeforeOrEquals(resultStartingInstant, queryStartingInstant)
+                        && isInstantBeforeOrEquals(resultEndingInstant, queryEndingInstant)) {
+                    playTime += Duration.between(queryStartingInstant, resultEndingInstant).toMillis();
+                } else if (isInstantBeforeOrEquals(resultStartingInstant, queryStartingInstant)
+                        && isInstantAfterOrEquals(resultEndingInstant, queryEndingInstant)) {
+                    playTime += Duration.between(queryStartingInstant, queryEndingInstant).toMillis();
                 }
             }
-            return timePlayed;
+            return playTime;
 
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -196,6 +212,16 @@ public class SQLite {
         for (TimeLoggerSavedPlayer player : savedPlayers) {
             insertPlayerTimeLogger(player.getUuid(), player.getPlayTime(), player.getStartingTime(), player.getEndingTime());
             deletePlayerFromAutoSave(player.getUuid());
+        }
+    }
+
+    // TEST METHOD
+    void clearDB() {
+        try (Connection c = connect(); Statement pstmt = c.createStatement()) {
+            String sql = "DELETE FROM time_logger";
+            pstmt.execute(sql);
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
         }
     }
 

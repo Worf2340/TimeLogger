@@ -64,6 +64,8 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
             endingInstant = Instant.now();
         }
 
+        //TODO validate starting date to ensure no earlier than 1970-01-01
+
         // /playtimelb [size] [time]
         else if (args.length == 2) {
 

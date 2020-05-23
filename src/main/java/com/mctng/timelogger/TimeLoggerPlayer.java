@@ -11,6 +11,9 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+import static com.mctng.timelogger.utils.DateTimeUtil.isInstantAfterOrEquals;
+import static com.mctng.timelogger.utils.DateTimeUtil.isInstantBeforeOrEquals;
+
 public class TimeLoggerPlayer {
 
     private final OfflinePlayer player;
@@ -75,13 +78,13 @@ public class TimeLoggerPlayer {
             Instant playerJoinTime = plugin.startingTimes.get(player);
             if ((startingInstant.isBefore(playerJoinTime)) && endingInstant.isBefore(playerJoinTime)) {
                 currentPlaytime = 0;
-            } else if (isAfterOrEquals(startingInstant, playerJoinTime) && isBeforeOrEquals(endingInstant, now)) {
+            } else if (isInstantAfterOrEquals(startingInstant, playerJoinTime) && isInstantBeforeOrEquals(endingInstant, now)) {
                 currentPlaytime = Duration.between(startingInstant, endingInstant).toMillis();
-            } else if (isAfterOrEquals(startingInstant, playerJoinTime) && isAfterOrEquals(endingInstant, now)) {
+            } else if (isInstantAfterOrEquals(startingInstant, playerJoinTime) && isInstantAfterOrEquals(endingInstant, now)) {
                 currentPlaytime = Duration.between(startingInstant, now).toMillis();
-            } else if (isBeforeOrEquals(startingInstant, playerJoinTime) && isBeforeOrEquals(endingInstant, now)) {
+            } else if (isInstantBeforeOrEquals(startingInstant, playerJoinTime) && isInstantBeforeOrEquals(endingInstant, now)) {
                 currentPlaytime = Duration.between(playerJoinTime, endingInstant).toMillis();
-            } else if (isBeforeOrEquals(startingInstant, playerJoinTime) && isAfterOrEquals(endingInstant, now)) {
+            } else if (isInstantBeforeOrEquals(startingInstant, playerJoinTime) && isInstantAfterOrEquals(endingInstant, now)) {
                 currentPlaytime = Duration.between(playerJoinTime, now).toMillis();
             } else {
                 currentPlaytime = 0;
@@ -102,13 +105,6 @@ public class TimeLoggerPlayer {
         return player instanceof Player;
     }
 
-    private boolean isAfterOrEquals(Instant instant1, Instant instant2) {
-        return (instant1.isAfter(instant2) || instant1.equals(instant2));
-    }
-
-    private boolean isBeforeOrEquals(Instant instant1, Instant instant2) {
-        return (instant1.isBefore(instant2) || instant1.equals(instant2));
-    }
 
     public OfflinePlayer getPlayer() {
         return player;
