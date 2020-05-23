@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.UUID;
 
 class AutoSaveRunnable {
 
@@ -22,9 +23,9 @@ class AutoSaveRunnable {
         new BukkitRunnable() {
             @Override
             public void run() {
-                ArrayList<Player> onlinePlayers = new ArrayList<>();
+                ArrayList<UUID> onlinePlayers = new ArrayList<>();
                 for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-                    onlinePlayers.add(p);
+                    onlinePlayers.add(p.getUniqueId());
                 }
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
@@ -32,15 +33,15 @@ class AutoSaveRunnable {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        for (Player player : onlinePlayers) {
-                            Instant startingTime = plugin.startingTimes.get(player);
+                        for (UUID uuid : onlinePlayers) {
+                            plugin.getSQLHandler().deletePlayerFromAutoSave(uuid.toString());
+                            Instant startingTime = plugin.startingTimes.get(uuid);
                             Instant currentTime = Instant.now();
                             long timeElapsed = Duration.between(startingTime, currentTime).toMillis();
 
-                            plugin.getSQLHandler().insertPlayerAutoSave(player.getUniqueId().toString(), timeElapsed,
+                            plugin.getSQLHandler().insertPlayerAutoSave(uuid.toString(), timeElapsed,
                                     formatter.format(startingTime), formatter.format(currentTime));
-
-
+                            System.out.println("Done");
                         }
                     }
                 }.runTaskAsynchronously(plugin);

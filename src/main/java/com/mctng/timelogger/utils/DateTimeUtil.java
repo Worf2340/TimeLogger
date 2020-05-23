@@ -40,7 +40,7 @@ public class DateTimeUtil {
             throw new NumberFormatException("Invalid amount of time");
         }
 
-        String unit = timeString.substring(timeString.length() - 1);
+        String unit = timeString.substring(timeString.length() - 1).toLowerCase();
         long timeInMillis;
 
         switch (unit) {

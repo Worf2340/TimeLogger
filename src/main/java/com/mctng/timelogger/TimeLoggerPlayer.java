@@ -75,7 +75,7 @@ public class TimeLoggerPlayer {
         Instant now = Instant.now();
 
         if (this.isOnline()) {
-            Instant playerJoinTime = plugin.startingTimes.get(player);
+            Instant playerJoinTime = plugin.startingTimes.get(player.getUniqueId());
             if ((startingInstant.isBefore(playerJoinTime)) && endingInstant.isBefore(playerJoinTime)) {
                 currentPlaytime = 0;
             } else if (isInstantAfterOrEquals(startingInstant, playerJoinTime) && isInstantBeforeOrEquals(endingInstant, now)) {

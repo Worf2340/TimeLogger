@@ -21,7 +21,7 @@ public class LogoutListener implements Listener {
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
-        Instant startingTime = plugin.startingTimes.get(event.getPlayer());
+        Instant startingTime = plugin.startingTimes.get(event.getPlayer().getUniqueId());
         Instant currentTime = Instant.now();
         long timeElapsed = Duration.between(startingTime, currentTime).toMillis();
         plugin.getSQLHandler().deletePlayerFromAutoSave(event.getPlayer().getUniqueId().toString());

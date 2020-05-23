@@ -30,7 +30,6 @@ public class PlayTimeCommand implements CommandExecutor {
         // /playtime [player]
         if (args.length == 1) {
 
-
             if (args[0].equalsIgnoreCase("?")) {
                 displayUsage(sender);
                 return true;
@@ -73,6 +72,11 @@ public class PlayTimeCommand implements CommandExecutor {
                 return true;
             }
 
+            if (startingInstant.isBefore(LocalDateTime.parse("1970-01-01T00:00:00").atZone(ZoneId.of("UTC"))
+                    .toInstant())) {
+                sender.sendMessage(ChatColor.RED + "That date is too far in the past!");
+                return true;
+            }
 
             endingInstant = Instant.now();
             player = new TimeLoggerPlayer(args[0], plugin);
@@ -120,6 +124,11 @@ public class PlayTimeCommand implements CommandExecutor {
 
             startingInstant = date.atStartOfDay(timeZone).toInstant();
             endingInstant = date.atTime(23, 59, 59).atZone(timeZone).toInstant();
+            if (startingInstant.isBefore(LocalDateTime.parse("1970-01-01T00:00:00").atZone(ZoneId.of("UTC"))
+                    .toInstant())) {
+                sender.sendMessage(ChatColor.RED + "That date is too far in the past!");
+                return true;
+            }
 
             player = new TimeLoggerPlayer(args[0], plugin);
             message1 = player.getGetColoredName() + ChatColor.GRAY +
@@ -141,7 +150,7 @@ public class PlayTimeCommand implements CommandExecutor {
             // Parse timezone
             String timezoneString;
             if (args.length == 8) {
-                if (args[7].startsWith("#tz:")) {
+                if (args[7].toLowerCase().startsWith("#tz:")) {
                     timezoneString = args[7].substring(4).toUpperCase();
                 } else {
                     displayUsage(sender);
@@ -166,6 +175,11 @@ public class PlayTimeCommand implements CommandExecutor {
                 endingDateTime = LocalDateTime.parse(args[5] + "T" + args[6]);
             } catch (DateTimeParseException e) {
                 sender.sendMessage(ChatColor.RED + "Please format your datetime in the yyyy-mm-dd HH:mm:ss format.");
+                return true;
+            }
+
+            if (endingDateTime.isBefore(startingDateTime)) {
+                sender.sendMessage(ChatColor.RED + "The ending time cannot be before the starting time!");
                 return true;
             }
 

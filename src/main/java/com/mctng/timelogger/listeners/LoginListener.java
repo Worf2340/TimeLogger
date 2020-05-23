@@ -17,6 +17,6 @@ public class LoginListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
-        plugin.startingTimes.put(event.getPlayer(), Instant.now());
+        plugin.startingTimes.put(event.getPlayer().getUniqueId(), Instant.now());
     }
 }

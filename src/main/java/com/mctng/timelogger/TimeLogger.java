@@ -5,7 +5,6 @@ import com.mctng.timelogger.commands.PlayTimeLeaderboardCommand;
 import com.mctng.timelogger.listeners.LoginListener;
 import com.mctng.timelogger.listeners.LogoutListener;
 import org.bukkit.ChatColor;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -14,11 +13,12 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class TimeLogger extends JavaPlugin {
 
     private SQLite SQLHandler;
-    public HashMap<Player, Instant> startingTimes;
+    public HashMap<UUID, Instant> startingTimes;
 
     @Override
     public void onEnable() {

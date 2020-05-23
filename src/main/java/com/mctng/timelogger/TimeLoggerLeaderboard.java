@@ -27,16 +27,19 @@ public class TimeLoggerLeaderboard {
         initializeLeaderboard();
     }
 
-    public String getFormattedLeaderboard() {
+    public String getFormattedLeaderboard(String timeString) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("UTC"));
 
         String date = formatter.format(startingInstant);
-        String header = ChatColor.GOLD + "" + ChatColor.GOLD + "PlayTime Leaderboard Since " + date + ":\n";
+        String header = ChatColor.YELLOW + "PlayTime Leaderboard" + timeString + ":\n";
         StringBuilder tabTextBuilder = new StringBuilder("RANK`NAME`PLAYTIME\n");
-
         for (int i = 0; i < this.rankingListSize; i++) {
-            tabTextBuilder.append(i + 1).append("`").append(leaderboard.get(i).getPlayer().getName())
-                    .append("`").append(DateTimeUtil.formatMillis(leaderboard.get(i).getPlayTimeInMillis())).append("\n");
+            tabTextBuilder
+                    .append(i + 1).append("`")
+                    .append(leaderboard.get(i).getPlayer().getName())
+                    .append("`")
+                    .append(DateTimeUtil.formatMillis(leaderboard.get(i).getPlayTimeInMillis()))
+                    .append("\n");
         }
 
         TabText tt = new TabText(tabTextBuilder.toString());
