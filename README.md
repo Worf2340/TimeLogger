@@ -6,6 +6,8 @@
 * `/playtime [player] <time>`
   - Checks playtime of a player. If no time is specified, it will check all playtime.
   - Valid time units: seconds (s), minutes (m), hours (h), days (d).
+  - Ex: `/playtime Worf2340` would return all of Worf2340's playtime.
+  - Ex: `/playtime Worf2340 24h` would return all of Worf2340's playtime in the last 24 hours. 
 * `/playtime [player] on [date] <timezone>`
   - Checks playtime of a player on a certain date.
   - Dates must be formatted in the `yyyy-MM-dd` format.
@@ -25,9 +27,16 @@
   - Displays the top specified number of players since the specified time.
   - If no time is specified, the number of top players since the start of the month will be displayed. 
   - Valid time units: seconds (s), minutes (m), hours (h), days (d).
+  - Ex: `/playtime 10 24h`
 * `/playtimelb [size] since [date]`
   - Displays the top specified number of players since a specified date. 
   - The date must be in `yyyy-MM-dd` format.
+  - Ex: `/playtime 10 since 2020-05-01`
+* `/playtimelb [size] from [date] [time] to [date] [time] <timezone>
+  - Displays the top number of specified players between two datetimes. 
+  - The datetime format must be `yyyy-MM-dd HH:mm:ss`.
+  - The timezone is optional. 
+  - Ex: `/playtime 10 from 2019-01-01 00:00:00 to 2020-01-01 00:00:00 #tz:PST`
 ## Permissions
 * `timelogger.playtime` gives access to all `/playtime` commands.
 * `timelogger.leaderboard` gives access to ONLY the `/playtimelb` command (no paramaters).
