@@ -3,24 +3,26 @@ package com.mctng.timelogger;
 import java.util.UUID;
 
 public class TimeLoggerLeaderboardPlayer extends TimeLoggerPlayer implements Comparable<TimeLoggerLeaderboardPlayer> {
-    private final String uuidString;
+    private final UUID uuid;
     private Long playTime;
 
-    public TimeLoggerLeaderboardPlayer(String uuidString, TimeLogger plugin, Long playTime) {
+    TimeLoggerLeaderboardPlayer(String uuidString, TimeLogger plugin, Long playTime) {
         super(UUID.fromString(uuidString), plugin);
-        this.uuidString = uuidString;
+        this.uuid = UUID.fromString(uuidString);
         this.playTime = playTime;
     }
 
-    public String getUuidString() {
-        return uuidString;
+    TimeLoggerLeaderboardPlayer(UUID uuid, TimeLogger plugin, Long playTime) {
+        super(uuid, plugin);
+        this.uuid = uuid;
+        this.playTime = playTime;
     }
 
-    public Long getPlayTime() {
+    Long getPlayTime() {
         return playTime;
     }
 
-    public void setPlayTime(Long playTime) {
+    void setPlayTime(Long playTime) {
         this.playTime = playTime;
     }
 

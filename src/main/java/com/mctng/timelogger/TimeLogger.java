@@ -40,8 +40,8 @@ public class TimeLogger extends JavaPlugin {
 
         try {
             SQLHandler = new SQLite(this, "time_logger.db");
-            SQLHandler.createTableIfNotExistsTimeLogger();
-            SQLHandler.createTableIfNotExistsAutoSave();
+            SQLHandler.createTimeLoggerTableIfNotExists();
+            SQLHandler.createAutoSaveTableIfNotExists();
             SQLHandler.moveFromAutoSaveToTimeLogger();
             this.getLogger().info("Initialized connection to SQLite.");
         } catch (ClassNotFoundException | SQLException e) {

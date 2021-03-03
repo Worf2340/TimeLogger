@@ -13,7 +13,7 @@ class TimeLoggerPlayerTest {
     @Test
     void test1() {
         TimeLoggerPlayer player = new TimeLoggerPlayer("Worf2340", new TimeLogger());
-        long x = player.getTotalPlayTimeInMillis();
+        long x = player.getTotalPlaytime();
         assert x != 0;
     }
 

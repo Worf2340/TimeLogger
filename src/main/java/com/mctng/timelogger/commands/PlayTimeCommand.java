@@ -42,7 +42,7 @@ public class PlayTimeCommand implements CommandExecutor {
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    long playTime = player.getTotalPlayTimeInMillis();
+                    long playTime = player.getTotalPlaytime();
                     new BukkitRunnable() {
                         @Override
                         public void run() {
@@ -216,7 +216,7 @@ public class PlayTimeCommand implements CommandExecutor {
         new BukkitRunnable() {
             @Override
             public void run() {
-                long playTime = player.getPlayTimeInMillisBetweenInstants(startingInstant, endingInstant);
+                long playTime = player.getPlaytimeBetweenInstants(startingInstant, endingInstant);
                 new BukkitRunnable() {
                     @Override
                     public void run() {

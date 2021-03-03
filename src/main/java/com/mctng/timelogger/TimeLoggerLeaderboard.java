@@ -13,11 +13,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static com.mctng.timelogger.utils.DateTimeUtil.isInstantAfterOrEquals;
 import static com.mctng.timelogger.utils.DateTimeUtil.isInstantBeforeOrEquals;
 
-@SuppressWarnings("Duplicates")
 public class TimeLoggerLeaderboard {
 
     private int rankingListSize;
@@ -25,18 +25,12 @@ public class TimeLoggerLeaderboard {
     private Instant queryEndingInstant;
     private TimeLogger plugin;
     private ArrayList<TimeLoggerLeaderboardPlayer> leaderboard;
-    private ArrayList<String> onlinePlayers;
 
     public TimeLoggerLeaderboard(int leaderboardSize, Instant queryStartingInstant, Instant queryEndingInstant, TimeLogger plugin) {
         this.queryStartingInstant = queryStartingInstant;
         this.queryEndingInstant = queryEndingInstant;
         this.rankingListSize = leaderboardSize;
         this.plugin = plugin;
-        this.onlinePlayers = new ArrayList<>();
-
-        for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-            onlinePlayers.add(p.getUniqueId().toString());
-        }
 
     }
 
@@ -46,9 +40,6 @@ public class TimeLoggerLeaderboard {
             return ChatColor.YELLOW + "No players played during that time period.";
         }
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.of("UTC"));
-
-        String date = formatter.format(queryStartingInstant);
         String header = ChatColor.YELLOW + "PlayTime Leaderboard " + timeString + ":\n";
         StringBuilder tabTextBuilder = new StringBuilder("RANK`NAME`PLAYTIME\n");
         for (int i = 0; i < this.rankingListSize; i++) {
@@ -74,38 +65,39 @@ public class TimeLoggerLeaderboard {
         String endingInstantString = formatter.format(queryEndingInstant);
         String startingInstantString = formatter.format(queryStartingInstant);
 
-        ArrayList<TimeLoggerRecord> timeRecords = plugin.getSQLHandler().getRecordsBetweenTimes(startingInstantString, endingInstantString);
+        ArrayList<TimeLoggerRecord> timeRecords = plugin.getSQLHandler().getPlaytimeRecords(startingInstantString, endingInstantString);
         leaderboard = new ArrayList<>();
 
-        for (TimeLoggerRecord record : timeRecords) {
 
+        for (TimeLoggerRecord record : timeRecords) {
             long playTime = 0;
+
             Instant resultEndingInstant = Instant.from(formatter.parse(record.getEndingTime()));
             Instant resultStartingInstant = Instant.from(formatter.parse(record.getStartingTime()));
 
             if (isInstantAfterOrEquals(resultStartingInstant, queryStartingInstant)
                     && isInstantBeforeOrEquals(resultEndingInstant, queryEndingInstant)) {
-                playTime += Duration.between(resultStartingInstant, resultEndingInstant).toMillis();
+                playTime = Duration.between(resultStartingInstant, resultEndingInstant).toMillis();
             } else if (isInstantAfterOrEquals(resultStartingInstant, queryStartingInstant)
                     && isInstantAfterOrEquals(resultEndingInstant, queryEndingInstant)) {
-                playTime += Duration.between(resultStartingInstant, queryEndingInstant).toMillis();
+                playTime = Duration.between(resultStartingInstant, queryEndingInstant).toMillis();
             } else if (isInstantBeforeOrEquals(resultStartingInstant, queryStartingInstant)
                     && isInstantBeforeOrEquals(resultEndingInstant, queryEndingInstant)) {
-                playTime += Duration.between(queryStartingInstant, resultEndingInstant).toMillis();
+                playTime = Duration.between(queryStartingInstant, resultEndingInstant).toMillis();
             } else if (isInstantBeforeOrEquals(resultStartingInstant, queryStartingInstant)
                     && isInstantAfterOrEquals(resultEndingInstant, queryEndingInstant)) {
-                playTime += Duration.between(queryStartingInstant, queryEndingInstant).toMillis();
+                playTime = Duration.between(queryStartingInstant, queryEndingInstant).toMillis();
             }
 
 
-            if (containsPlayer(leaderboard, record.getUuid())) {
+            if (containsPlayer(leaderboard, record.getUUID())) {
                 for (TimeLoggerLeaderboardPlayer player : leaderboard) {
-                    if (player.getUuidString().equals(record.getUuid())) {
+                    if (player.getUUID().equals(record.getUUID())) {
                         player.setPlayTime(player.getPlayTime() + playTime);
                     }
                 }
             } else {
-                leaderboard.add(new TimeLoggerLeaderboardPlayer(record.getUuid(), this.plugin, playTime));
+                leaderboard.add(new TimeLoggerLeaderboardPlayer(record.getUUID(), this.plugin, playTime));
             }
 
         }
@@ -124,9 +116,9 @@ public class TimeLoggerLeaderboard {
                 currentPlaytime = Duration.between(playerJoinTime, Instant.now()).toMillis();
             }
 
-            if (containsPlayer(leaderboard, player.getUniqueId().toString())) {
+            if (containsPlayer(leaderboard, player.getUniqueId())) {
                 for (TimeLoggerLeaderboardPlayer leaderboardPlayer : leaderboard) {
-                    if (leaderboardPlayer.getUuidString().equals(player.getUniqueId().toString())) {
+                    if (leaderboardPlayer.getUUID().toString().equals(player.getUniqueId().toString())) {
                         leaderboardPlayer.setPlayTime(leaderboardPlayer
                                 .getPlayTime() + currentPlaytime);
                     }
@@ -146,8 +138,8 @@ public class TimeLoggerLeaderboard {
         }
     }
 
-    private boolean containsPlayer(final List<TimeLoggerLeaderboardPlayer> list, final String uuidString) {
-        return list.stream().map(TimeLoggerLeaderboardPlayer::getUuidString).anyMatch(uuidString::equals);
+    private boolean containsPlayer(final List<TimeLoggerLeaderboardPlayer> list, final UUID uuid) {
+        return list.stream().map(TimeLoggerLeaderboardPlayer::getUUID).anyMatch(uuid::equals);
     }
 
 }

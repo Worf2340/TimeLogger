@@ -6,7 +6,7 @@
 
     <groupId>com.mctng</groupId>
     <artifactId>TimeLogger</artifactId>
-    <version>1.0-1.7.10</version>
+    <version>1.1-1.7.10</version>
     <packaging>jar</packaging>
 
     <name>TimeLogger</name>

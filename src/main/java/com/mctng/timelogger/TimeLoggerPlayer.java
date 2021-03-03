@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static com.mctng.timelogger.utils.DateTimeUtil.isInstantAfterOrEquals;
@@ -18,9 +19,7 @@ public class TimeLoggerPlayer {
 
     private final OfflinePlayer player;
     private final TimeLogger plugin;
-
-
-    private final String uuidString;
+    private UUID uuid;
 
     TimeLoggerPlayer(UUID uuid, TimeLogger plugin) {
         if (Bukkit.getPlayer(uuid) != null) {
@@ -30,7 +29,7 @@ public class TimeLoggerPlayer {
         }
 
         this.plugin = plugin;
-        this.uuidString = uuid.toString();
+        this.uuid = uuid;
     }
 
     @SuppressWarnings("deprecation")
@@ -42,10 +41,58 @@ public class TimeLoggerPlayer {
             this.player = Bukkit.getOfflinePlayer(playerName);
         }
 
+        this.uuid = player.getUniqueId();
         this.plugin = plugin;
-        this.uuidString = this.player.getUniqueId().toString();
     }
 
+    public long getTotalPlaytime() {
+        long playTime = 0;
+        ArrayList<TimeLoggerRecord> records = plugin.getSQLHandler().getPlaytimeRecords(this.uuid.toString());
+
+        for (TimeLoggerRecord record : records) {
+            playTime += record.getPlayTime();
+        }
+
+        if (this.isOnline()) {
+            Instant playerJoinTime = plugin.startingTimes.get(player.getUniqueId());
+            playTime += Duration.between(playerJoinTime, Instant.now()).toMillis();
+        }
+
+        return playTime;
+    }
+
+    public long getPlaytimeBetweenInstants(Instant startingInstant, Instant endingInstant) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
+
+        String endingInstantString = formatter.format(endingInstant);
+        String startingInstantString = formatter.format(startingInstant);
+
+        ArrayList<TimeLoggerRecord> records = plugin.getSQLHandler().getPlaytimeRecords(this.uuid.toString(),
+                startingInstantString, endingInstantString);
+
+
+        long playTime = 0;
+
+        for (TimeLoggerRecord record : records) {
+            playTime += record.getPlayTime();
+        }
+
+        if (this.isOnline()) {
+            Instant playerJoinTime = plugin.startingTimes.get(player.getUniqueId());
+            if (isInstantAfterOrEquals(startingInstant, playerJoinTime) && isInstantBeforeOrEquals(endingInstant, Instant.now())) {
+                playTime += Duration.between(startingInstant, endingInstant).toMillis();
+            } else if (isInstantAfterOrEquals(startingInstant, playerJoinTime) && isInstantAfterOrEquals(endingInstant, Instant.now())) {
+                playTime += Duration.between(startingInstant, Instant.now()).toMillis();
+            } else if (isInstantBeforeOrEquals(startingInstant, playerJoinTime) && isInstantBeforeOrEquals(endingInstant, Instant.now())) {
+                playTime += Duration.between(playerJoinTime, endingInstant).toMillis();
+            } else if (isInstantBeforeOrEquals(startingInstant, playerJoinTime) && isInstantAfterOrEquals(endingInstant, Instant.now())) {
+                playTime += Duration.between(playerJoinTime, Instant.now()).toMillis();
+            }
+        }
+
+        return playTime;
+
+    }
 
     public String getGetColoredName() {
         ChatColor chatColor;
@@ -56,63 +103,19 @@ public class TimeLoggerPlayer {
         } else {
             chatColor = ChatColor.RED;
         }
-        
+
         return chatColor + playerName;
-    }
-
-    public long getTotalPlayTimeInMillis() {
-        long currentPlaytime;
-        if (this.isOnline()) {
-            Instant playerJoinTime = plugin.startingTimes.get(player.getUniqueId());
-            currentPlaytime = Duration.between(playerJoinTime, Instant.now()).toMillis();
-        } else {
-            currentPlaytime = 0;
-        }
-
-        return plugin.getSQLHandler().getPlaytime(uuidString) + currentPlaytime;
-    }
-
-    public long getPlayTimeInMillisBetweenInstants(Instant startingInstant, Instant endingInstant) {
-        long currentPlaytime;
-        Instant now = Instant.now();
-
-        if (this.isOnline()) {
-            Instant playerJoinTime = plugin.startingTimes.get(player.getUniqueId());
-            if ((startingInstant.isBefore(playerJoinTime)) && endingInstant.isBefore(playerJoinTime)) {
-                currentPlaytime = 0;
-            } else if (isInstantAfterOrEquals(startingInstant, playerJoinTime) && isInstantBeforeOrEquals(endingInstant, now)) {
-                currentPlaytime = Duration.between(startingInstant, endingInstant).toMillis();
-            } else if (isInstantAfterOrEquals(startingInstant, playerJoinTime) && isInstantAfterOrEquals(endingInstant, now)) {
-                currentPlaytime = Duration.between(startingInstant, now).toMillis();
-            } else if (isInstantBeforeOrEquals(startingInstant, playerJoinTime) && isInstantBeforeOrEquals(endingInstant, now)) {
-                currentPlaytime = Duration.between(playerJoinTime, endingInstant).toMillis();
-            } else if (isInstantBeforeOrEquals(startingInstant, playerJoinTime) && isInstantAfterOrEquals(endingInstant, now)) {
-                currentPlaytime = Duration.between(playerJoinTime, now).toMillis();
-            } else {
-                currentPlaytime = 0;
-            }
-        } else {
-            currentPlaytime = 0;
-        }
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
-
-        String endingInstantString = formatter.format(endingInstant);
-        String startingInstantString = formatter.format(startingInstant);
-
-        return plugin.getSQLHandler().getPlaytimeBetweenTimes(uuidString, startingInstantString, endingInstantString) + currentPlaytime;
     }
 
     private boolean isOnline() {
         return player instanceof Player;
     }
 
-
     public OfflinePlayer getPlayer() {
         return player;
     }
 
-    public String getUuidString() {
-        return uuidString;
+    UUID getUUID() {
+        return uuid;
     }
 }

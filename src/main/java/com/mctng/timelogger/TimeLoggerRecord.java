@@ -1,26 +1,34 @@
 package com.mctng.timelogger;
 
-public class TimeLoggerRecord {
+import java.util.UUID;
 
-    private String uuid;
-    private String startingTime;
-    private String endingTime;
+class TimeLoggerRecord {
 
-    public TimeLoggerRecord(String uuid, String startingTime, String endingTime) {
-        this.uuid = uuid;
+    private final UUID uuid;
+    private final String startingTime;
+    private final String endingTime;
+    private final long playTime;
+
+    TimeLoggerRecord(String uuidString, long playTime, String startingTime, String endingTime) {
+        this.uuid = UUID.fromString(uuidString);
         this.startingTime = startingTime;
         this.endingTime = endingTime;
+        this.playTime = playTime;
     }
 
-    public String getUuid() {
+    UUID getUUID() {
         return uuid;
     }
 
-    public String getStartingTime() {
+    String getStartingTime() {
         return startingTime;
     }
 
-    public String getEndingTime() {
+    String getEndingTime() {
         return endingTime;
+    }
+
+    long getPlayTime() {
+        return playTime;
     }
 }

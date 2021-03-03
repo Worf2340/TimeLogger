@@ -70,8 +70,6 @@ public class PlayTimeLeaderboardCommand implements CommandExecutor {
 
         }
 
-        //TODO validate starting date to ensure no earlier than 1970-01-01
-
         // /playtimelb [size] [time]
         else if (args.length == 2) {
             DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.of("UTC"));
