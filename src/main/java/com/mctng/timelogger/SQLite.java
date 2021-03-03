@@ -158,6 +158,39 @@ public class SQLite {
     }
 
 
+    ArrayList<TimeLoggerRecord> getRecordsBetweenTimes(String queryStartingTime, String queryEndingTime) {
+        String sql = "SELECT * FROM time_logger \n" +
+                "WHERE (((? BETWEEN starting_time AND ending_time) \n" +
+                "OR (? BETWEEN starting_time AND ending_time)) \n" +
+                "OR (((ending_time BETWEEN  ? AND ?)) \n" +
+                "OR ((starting_time BETWEEN ? AND ?)))) \n";
+
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, queryStartingTime);
+            pstmt.setString(2, queryEndingTime);
+            pstmt.setString(3, queryStartingTime);
+            pstmt.setString(4, queryEndingTime);
+            pstmt.setString(5, queryStartingTime);
+            pstmt.setString(6, queryEndingTime);
+
+            ResultSet rs = pstmt.executeQuery();
+
+            ArrayList<TimeLoggerRecord> records = new ArrayList<>();
+
+            while (rs.next()) {
+                TimeLoggerRecord currentRecord = new TimeLoggerRecord(rs.getString("uuid"), rs.getString("starting_time"),
+                        rs.getString("ending_time"));
+                records.add(currentRecord);
+            }
+
+            return records;
+
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     ArrayList<String> getPlayers() {
         String sql = "SELECT DISTINCT uuid FROM time_logger";
         ArrayList<String> playerList = new ArrayList<>();
@@ -169,7 +202,6 @@ public class SQLite {
 
             TimeLoggerPlayer currentPlayer;
             String uuid;
-            playerList = new ArrayList<>();
             while (rs.next()) {
                 uuid = rs.getString("uuid");
                 playerList.add(uuid);
@@ -180,6 +212,38 @@ public class SQLite {
         return playerList;
     }
 
+    ArrayList<String> getPlayersBetweenTime(String queryStartingTime, String queryEndingTime) {
+        String sql = "SELECT DISTINCT uuid FROM time_logger \n" +
+                "WHERE (((? BETWEEN starting_time AND ending_time) \n" +
+                "OR (? BETWEEN starting_time AND ending_time)) \n" +
+                "OR (((ending_time BETWEEN  ? AND ?)) \n" +
+                "OR ((starting_time BETWEEN ? AND ?)))) \n";
+
+        ArrayList<String> playerList = new ArrayList<>();
+
+        try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, queryStartingTime);
+            pstmt.setString(2, queryEndingTime);
+            pstmt.setString(3, queryStartingTime);
+            pstmt.setString(4, queryEndingTime);
+            pstmt.setString(5, queryStartingTime);
+            pstmt.setString(6, queryEndingTime);
+            ResultSet rs = pstmt.executeQuery();
+
+
+            // loop through the result set
+
+            String uuid;
+            while (rs.next()) {
+                uuid = rs.getString("uuid");
+                playerList.add(uuid);
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return playerList;
+    }
     public void deletePlayerFromAutoSave(String uuid) {
         String sql = "DELETE FROM auto_save WHERE uuid = ?";
         try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -214,14 +278,38 @@ public class SQLite {
         }
     }
 
-    // TEST METHOD
-    void clearDB() {
-        try (Connection c = connect(); Statement pstmt = c.createStatement()) {
-            String sql = "DELETE FROM time_logger";
-            pstmt.execute(sql);
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
+    private class TimeLoggerSavedPlayer {
+
+        private final String uuid;
+        private final long playTime;
+        private final String startingTime;
+        private final String endingTime;
+
+        TimeLoggerSavedPlayer(String uuid, long playTime, String startingTime, String endingTime) {
+            this.uuid = uuid;
+            this.playTime = playTime;
+            this.startingTime = startingTime;
+            this.endingTime = endingTime;
+        }
+
+        String getUuid() {
+            return uuid;
+        }
+
+        long getPlayTime() {
+            return playTime;
+        }
+
+        String getStartingTime() {
+            return startingTime;
+        }
+
+        String getEndingTime() {
+            return endingTime;
         }
     }
 
+
 }
+
+

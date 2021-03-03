@@ -23,7 +23,7 @@ public class TimeLogger extends JavaPlugin {
     @Override
     public void onEnable() {
         startingTimes = new HashMap<>();
-        // Plugin startup logic
+
         this.getCommand("playtime").setExecutor(new PlayTimeCommand(this));
         this.getCommand("playtimelb").setExecutor(new PlayTimeLeaderboardCommand(this));
         this.getCommand("playtime")
@@ -53,10 +53,6 @@ public class TimeLogger extends JavaPlugin {
         autoSaveRunnable.begin();
     }
 
-    @Override
-    public void onDisable() {
-        // Plugin shutdown logic
-    }
 
     public SQLite getSQLHandler() {
         return SQLHandler;

@@ -7,20 +7,22 @@ class TimeLoggerRankedPlayer extends TimeLoggerPlayer implements Comparable<Time
 
     private Long playTimeInMillis;
 
-    public TimeLoggerRankedPlayer(UUID uuid, TimeLogger plugin) {
+    TimeLoggerRankedPlayer(UUID uuid, TimeLogger plugin) {
         super(uuid, plugin);
     }
 
-    public void savePlayTimeInMillisBetweenInstants(Instant startingInstant, Instant endingInstant) {
+    void savePlayTimeInMillisBetweenInstants(Instant startingInstant, Instant endingInstant) {
         this.playTimeInMillis = getPlayTimeInMillisBetweenInstants(startingInstant, endingInstant);
+    }
+
+
+    Long getPlayTimeInMillis() {
+        return playTimeInMillis;
     }
 
     @Override
     public int compareTo(TimeLoggerRankedPlayer o) {
-        return getPlayTimeInMillis().compareTo(o.playTimeInMillis);
+        return playTimeInMillis.compareTo(o.getPlayTimeInMillis());
     }
 
-    public Long getPlayTimeInMillis() {
-        return playTimeInMillis;
-    }
 }

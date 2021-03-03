@@ -18,6 +18,8 @@ public class TimeLoggerPlayer {
 
     private final OfflinePlayer player;
     private final TimeLogger plugin;
+
+
     private final String uuidString;
 
     TimeLoggerPlayer(UUID uuid, TimeLogger plugin) {
@@ -108,5 +110,9 @@ public class TimeLoggerPlayer {
 
     public OfflinePlayer getPlayer() {
         return player;
+    }
+
+    public String getUuidString() {
+        return uuidString;
     }
 }
