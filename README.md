@@ -1,4 +1,4 @@
-# TimeLogger v1.0
+# TimeLogger v1.1
 ## A Spigot Plugin to check player's playtime. 
 
 ## Commands
